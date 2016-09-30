@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.jiangcai.lib.test.SpringWebTest;
 import me.jiangcai.wx.couple.debug.DebugFilter;
+import me.jiangcai.wx.model.PublicAccount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +20,7 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -97,8 +99,17 @@ public abstract class SingleAccountTest extends SpringWebTest {
     static class Config {
         @Bean
         public PublicAccountSupplier publicAccountSupplier() {
-//            System.out.println("111111");
-            return () -> Collections.singletonList(new DebugPublicAccount());
+            return new PublicAccountSupplier() {
+                @Override
+                public List<PublicAccount> getAccounts() {
+                    return Collections.singletonList(new DebugPublicAccount());
+                }
+
+                @Override
+                public PublicAccount findByIdentifier(String identifier) {
+                    return new DebugPublicAccount();
+                }
+            };
         }
 
     }

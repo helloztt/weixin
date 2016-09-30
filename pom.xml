@@ -17,6 +17,7 @@
         <module>api</module>
         <module>service</module>
         <module>demo</module>
+        <module>web</module>
     </modules>
 
     <!--<distributionManagement></distributionManagement>-->
@@ -31,7 +32,8 @@
         <spring.data.rest.version>2.4.4.RELEASE</spring.data.rest.version>
         <spring.security.version>4.0.4.RELEASE</spring.security.version>
         <maven.compiler.plugin.version>3.1</maven.compiler.plugin.version>
-        <fasterxml.jackson.version>2.6.4</fasterxml.jackson.version>
+        <fasterxml.jackson.version>2.7.5</fasterxml.jackson.version>
+        <thymeleaf.version>3.0.0.RELEASE</thymeleaf.version>
         <junit.version>4.12</junit.version>
         <jsonpath.version>2.2.0</jsonpath.version>
 

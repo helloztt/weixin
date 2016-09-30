@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 import java.util.Collections;
+import java.util.List;
 
 /**
  * @author CJ
@@ -22,14 +23,26 @@ public class MyConfig {
 
     @Bean
     public PublicAccountSupplier publicAccountSupplier() {
-        return () -> {
-            PublicAccount publicAccount = new PublicAccount();
-            publicAccount.setAppID("wx59b0162cdf0967af");
-            publicAccount.setAppSecret("ffcf655fce7c4175bbddae7b594c4e27");
-            publicAccount.setInterfaceURL("http://wxtest.jiangcai.me/wxtest/");
-            publicAccount.setInterfaceToken("jiangcai");
-            return Collections.singletonList(publicAccount);
+        return new PublicAccountSupplier() {
+            @Override
+            public List<PublicAccount> getAccounts() {
+                return Collections.singletonList(publicAccount());
+            }
+
+            @Override
+            public PublicAccount findByIdentifier(String identifier) {
+                return publicAccount();
+            }
         };
+    }
+
+    public PublicAccount publicAccount() {
+        PublicAccount publicAccount = new PublicAccount();
+        publicAccount.setAppID("wx59b0162cdf0967af");
+        publicAccount.setAppSecret("ffcf655fce7c4175bbddae7b594c4e27");
+        publicAccount.setInterfaceURL("http://wxtest.jiangcai.me/wxtest/");
+        publicAccount.setInterfaceToken("jiangcai");
+        return publicAccount;
     }
 
     @Bean
