@@ -1,0 +1,59 @@
+{
+  "request": {
+    "method": "POST",
+    "uri": "/wxtest/",
+    "url": "http://wxtest.jiangcai.me/wxtest/",
+    "content": "<xml><ToUserName><![CDATA[gh_ce3baa0eab03]]></ToUserName>\n<FromUserName><![CDATA[oiKvNt0neOAB8ddS0OzM_7QXQDZw]]></FromUserName>\n<CreateTime>1474892290</CreateTime>\n<MsgType><![CDATA[text]]></MsgType>\n<Content><![CDATA[12345678]]></Content>\n<MsgId>6334614151081282178</MsgId>\n</xml>",
+    "parameters": [
+      {
+        "name": "signature",
+        "value": "dce128903d55a6106b6bab0fb3ee712c54d33a4d"
+      },
+      {
+        "name": "timestamp",
+        "value": "1474892291"
+      },
+      {
+        "name": "nonce",
+        "value": "1058790328"
+      },
+      {
+        "name": "openid",
+        "value": "oiKvNt0neOAB8ddS0OzM_7QXQDZw"
+      }
+    ],
+    "headers": [
+      {
+        "name": "user-agent",
+        "value": "Mozilla/4.0"
+      },
+      {
+        "name": "accept",
+        "value": "*/*"
+      },
+      {
+        "name": "host",
+        "value": "wxtest.jiangcai.me"
+      },
+      {
+        "name": "pragma",
+        "value": "no-cache"
+      },
+      {
+        "name": "content-length",
+        "value": "281"
+      },
+      {
+        "name": "content-type",
+        "value": "text/xml"
+      }
+    ]
+  },
+  "handler": null,
+  "modelAndView": null,
+  "response": {
+    "status": 404,
+    "headers": [],
+    "contentType": null
+  }
+}
