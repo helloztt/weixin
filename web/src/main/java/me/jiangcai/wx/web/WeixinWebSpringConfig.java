@@ -1,15 +1,19 @@
 package me.jiangcai.wx.web;
 
 import me.jiangcai.wx.WeixinSpringConfig;
+import me.jiangcai.wx.web.mvc.OpenIdArgumentResolver;
 import me.jiangcai.wx.web.mvc.WeixinInterceptor;
 import me.jiangcai.wx.web.thymeleaf.JsProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+
+import java.util.List;
 
 /**
  * 如果要开发微信网页则需要载入该配置 ,
@@ -25,6 +29,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @ComponentScan("me.jiangcai.wx.web.thymeleaf")
 @Import(WeixinWebSpringConfig.MVCConfig.class)
 public class WeixinWebSpringConfig extends WeixinSpringConfig {
+
+    @Autowired
+    private OpenIdArgumentResolver openIdArgumentResolver;
+
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
+        super.addArgumentResolvers(argumentResolvers);
+        argumentResolvers.add(openIdArgumentResolver);
+    }
 
     @EnableWebMvc
     @ComponentScan("me.jiangcai.wx.web.mvc")

@@ -1,5 +1,6 @@
 package me.jiangcai.wx.protocol.impl;
 
+import me.jiangcai.wx.WeixinUserService;
 import me.jiangcai.wx.model.Menu;
 import me.jiangcai.wx.model.PublicAccount;
 import me.jiangcai.wx.protocol.Protocol;
@@ -10,6 +11,7 @@ import me.jiangcai.wx.protocol.impl.handler.VoidHandler;
 import me.jiangcai.wx.protocol.impl.handler.WeixinResponseHandler;
 import me.jiangcai.wx.protocol.impl.response.AccessToken;
 import me.jiangcai.wx.protocol.impl.response.JavascriptTicket;
+import me.jiangcai.wx.protocol.impl.response.UserAccessResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
@@ -67,6 +69,62 @@ class ProtocolImpl implements Protocol {
         } catch (IOException ex) {
             throw new ClientException(ex);
         }
+    }
+
+    @Override
+    public String baseRedirectUrl(String url) {
+//        https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx520c15f417810387
+        StringBuilder stringBuilder = new StringBuilder("https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx520c15f417810387");
+
+        // &redirect_uri=https%3A%2F%2Fchong.qq.com%2Fphp%2Findex.php%3Fd%3D%26c%3DwxAdapter%26m%3DmobileDeal%26showwxpaytitle%3D1%26vb2ctag%3D4_2030_5_1194_60
+        // &response_type=code&scope=snsapi_base&state=123#wechat_redirect
+        try {
+            stringBuilder.append("&redirect_uri=").append(URLEncoder.encode(url, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            throw new InternalError(e);
+        }
+        stringBuilder.append("&response_type=code&scope=snsapi_base&state=123#wechat_redirect");
+        return stringBuilder.toString();
+
+
+//        StringBuilder urlBuilder = new StringBuilder("https://open.weixin.qq.com/connect/oauth2/authorize?");
+//        urlBuilder.append("appid=").append(account.getAppID());
+//        try {
+//            urlBuilder.append("&redirect_uri=").append(URLEncoder.encode(url, "UTF-8"));
+//        } catch (UnsupportedEncodingException e) {
+//            throw new InternalError(e);
+//        }
+////        urlBuilder.append("&response_type=code")
+////                .append("&scope=").append("snsapi_base");
+////        urlBuilder.append("&state=");
+////
+////        urlBuilder.append("#wechat_redirect");
+//
+//        urlBuilder.append("&response_type=code&scope=snsapi_base&state=123#wechat_redirect");
+//
+//        return urlBuilder.toString();
+    }
+
+    @Override
+    public String userToken(String code, WeixinUserService weixinUserService) throws ProtocolException {
+        // https://api.weixin.qq.com/sns/oauth2/access_token?appid=APPID&secret=SECRET&code=CODE&grant_type=authorization_code
+        HttpGet get = newGetUrl("https://api.weixin.qq.com/sns/oauth2/access_token?"
+                , new BasicNameValuePair("appid", account.getAppID())
+                , new BasicNameValuePair("secret", account.getAppSecret())
+                , new BasicNameValuePair("code", code)
+                , new BasicNameValuePair("grant_type", "authorization_code"));
+
+        try {
+            UserAccessResponse response = client.execute(get, new WeixinResponseHandler<>(UserAccessResponse.class));
+            return response.getOpenId();
+        } catch (IOException e) {
+            throw new ProtocolException(e);
+        }
+
+    }
+
+    private HttpGet newGetUrl(String urlWith, NameValuePair... parameters) {
+        return new HttpGet(buildUrlWithUrl(urlWith, parameters));
     }
 
     @Override
@@ -128,13 +186,19 @@ class ProtocolImpl implements Protocol {
     }
 
     private HttpGet newGet(String uri, NameValuePair... parameters) {
-        StringBuilder urlBuilder = buildUrl(uri, parameters);
-        return new HttpGet(urlBuilder.toString());
+        String urlBuilder = buildUrl(uri, parameters);
+        return new HttpGet(urlBuilder);
     }
 
-    private StringBuilder buildUrl(String uri, NameValuePair[] parameters) {
-        StringBuilder urlBuilder = new StringBuilder("https://api.weixin.qq.com/cgi-bin" + uri + "?access_token="
-                + account.getAccessToken());
+    private String buildUrl(String uri, NameValuePair[] parameters) {
+        String url = "https://api.weixin.qq.com/cgi-bin" + uri + "?access_token="
+                + account.getAccessToken();
+        return buildUrlWithUrl(url, parameters);
+    }
+
+    private String buildUrlWithUrl(String url, NameValuePair... parameters) {
+        StringBuilder urlBuilder = new StringBuilder();
+        urlBuilder.append(url);
         for (NameValuePair parameter : parameters) {
             urlBuilder.append("&").append(parameter.getName()).append("=");
             try {
@@ -143,12 +207,12 @@ class ProtocolImpl implements Protocol {
                 throw new InternalError(e);
             }
         }
-        return urlBuilder;
+        return urlBuilder.toString();
     }
 
     private HttpPost newPost(String uri, NameValuePair... parameters) {
-        StringBuilder urlBuilder = buildUrl(uri, parameters);
-        return new HttpPost(urlBuilder.toString());
+        String urlBuilder = buildUrl(uri, parameters);
+        return new HttpPost(urlBuilder);
     }
 
     private HttpGet newTokenGet(String uriAndQuery) {

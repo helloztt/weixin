@@ -1,5 +1,6 @@
 package me.jiangcai.wx.protocol;
 
+import me.jiangcai.wx.WeixinUserService;
 import me.jiangcai.wx.model.Menu;
 import me.jiangcai.wx.model.PublicAccount;
 import me.jiangcai.wx.protocol.exception.ProtocolException;
@@ -41,4 +42,22 @@ public interface Protocol {
      * 更新{@link PublicAccount#javascriptTicket}
      */
     void getJavascriptTicket() throws ProtocolException;
+
+    /**
+     * 我要获得基本用户信息
+     *
+     * @param url 原url
+     * @return 新url
+     */
+    String baseRedirectUrl(String url);
+
+    /**
+     * 获取用户的{@link me.jiangcai.wx.model.WeixinUserDetail#openId}
+     *
+     * @param code              可以获取的code,用好就丢
+     * @param weixinUserService 用于维护用户信息的服务
+     * @return openId
+     * @throws ProtocolException
+     */
+    String userToken(String code, WeixinUserService weixinUserService) throws ProtocolException;
 }

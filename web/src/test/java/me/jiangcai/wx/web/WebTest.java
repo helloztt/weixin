@@ -4,6 +4,7 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import me.jiangcai.wx.web.thymeleaf.WeixinDialect;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
@@ -40,6 +41,7 @@ public abstract class WebTest extends BaseTest {
     protected void createWebDriver() {
         driver = MockMvcHtmlUnitDriverBuilder
                 .mockMvcSetup(mockMvc)
+                .useMockMvcForHosts("test.wx.com")
 //                .useMockMvcForHosts("")
                 .withDelegate(new WebConnectionHtmlUnitDriver() {
                     @Override
@@ -55,6 +57,7 @@ public abstract class WebTest extends BaseTest {
     @Configuration
     @EnableWebMvc
     @Import(Config.ThymeleafConfig.class)
+    @ComponentScan("me.jiangcai.wx.web.test")
     static class Config extends WebMvcConfigurerAdapter {
 
         @Autowired
