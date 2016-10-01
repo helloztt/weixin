@@ -24,5 +24,11 @@ public class PublicAccount {
     // 句柄信息
     private String accessToken;
     private LocalDateTime timeToExpire;
+    //
+    /**
+     * jsapi_ticket
+     */
+    private String javascriptTicket;
+    private LocalDateTime javascriptTimeToExpire;
 
 }

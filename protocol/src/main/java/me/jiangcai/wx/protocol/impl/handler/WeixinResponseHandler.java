@@ -15,17 +15,27 @@ import java.lang.reflect.ParameterizedType;
 /**
  * @author CJ
  */
-abstract class WeixinResponseHandler<T> extends AbstractResponseHandler<T> {
+public class WeixinResponseHandler<T> extends AbstractResponseHandler<T> {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Override
-    public T handleEntity(HttpEntity entity) throws IOException {
+    private final Class<T> clazz;
+
+    public WeixinResponseHandler() {
         ParameterizedType type = (ParameterizedType) getClass().getGenericSuperclass();
         @SuppressWarnings("unchecked")
         Class<T> clazz = (Class<T>) type.getActualTypeArguments()[0];
+        this.clazz = clazz;
+    }
+
+    public WeixinResponseHandler(Class<T> clazz) {
+        this.clazz = clazz;
+    }
+
+    @Override
+    public T handleEntity(HttpEntity entity) throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        StreamUtils.copy(entity.getContent(),buffer);
+        StreamUtils.copy(entity.getContent(), buffer);
 
         try {
             return objectMapper.readValue(buffer.toByteArray(), clazz);
@@ -33,7 +43,7 @@ abstract class WeixinResponseHandler<T> extends AbstractResponseHandler<T> {
             // 那应该是失败了哦
             ErrorResponse response = objectMapper.readValue(buffer.toByteArray(), ErrorResponse.class);
 
-            if (response.getCode()==0)
+            if (response.getCode() == 0)
                 return null;
 
             // 分析下错误 现在暴力点 直接。。

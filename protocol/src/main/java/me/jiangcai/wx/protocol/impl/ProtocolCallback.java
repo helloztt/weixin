@@ -30,15 +30,14 @@ public class ProtocolCallback implements InvocationHandler {
             }
 
             try {
-                method.invoke(protocol, objects);
+                return method.invoke(protocol, objects);
             } catch (BadAccessException ex) {
                 protocol.newAccessToken();
-                method.invoke(protocol, objects);
+                return method.invoke(protocol, objects);
             }
 
         } catch (NoSuchMethodException ex) {
             return method.invoke(protocol, objects);
         }
-        return null;
     }
 }

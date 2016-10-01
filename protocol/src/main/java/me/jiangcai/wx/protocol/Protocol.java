@@ -1,6 +1,5 @@
 package me.jiangcai.wx.protocol;
 
-import me.jiangcai.wx.message.Message;
 import me.jiangcai.wx.model.Menu;
 import me.jiangcai.wx.model.PublicAccount;
 import me.jiangcai.wx.protocol.exception.ProtocolException;
@@ -28,5 +27,18 @@ public interface Protocol {
      */
     void createMenu(Menu[] menus) throws ProtocolException;
 
+    /**
+     * javascript签名
+     *
+     * @param timestamp 当前时间戳(单位需为秒)
+     * @param nonceStr  随机字符串
+     * @param url       当前URL完整地址
+     * @return 签名
+     */
+    String javascriptSign(String timestamp, String nonceStr, String url) throws ProtocolException;
 
+    /**
+     * 更新{@link PublicAccount#javascriptTicket}
+     */
+    void getJavascriptTicket() throws ProtocolException;
 }

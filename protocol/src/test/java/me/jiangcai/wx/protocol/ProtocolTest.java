@@ -13,9 +13,8 @@ import java.util.UUID;
  */
 public class ProtocolTest {
 
-    private Random random = new Random();
-
     Protocol protocol;
+    private Random random = new Random();
 
     @Before
     public void init(){
@@ -30,8 +29,13 @@ public class ProtocolTest {
         Menu menu2 = randomMenu(true);
         Menu menu3 = randomMenu(true);
 
+        // 固定的也写一个呗
+        Menu menu4 = new Menu();
+        menu4.setType(MenuType.view);
+        menu4.setName("debug1");
+        menu4.setData("http://wxtest.jiangcai.me/wxtest/js.html");
 
-        protocol.createMenu(new Menu[]{menu1,menu2,menu3});
+        protocol.createMenu(new Menu[]{menu1, menu2, menu4});
     }
 
     private Menu randomMenu(boolean allowSub) {

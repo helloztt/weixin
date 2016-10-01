@@ -29,4 +29,12 @@ public interface PublicAccountSupplier {
      */
     PublicAccount findByIdentifier(String identifier);
 
+    /**
+     * 根据域名获取公众号,这个可作为可选实现,除非你的应用同时工作在微信页面中。
+     *
+     * @param host 域名
+     * @return 非空公众号
+     * @throws IllegalArgumentException 没有找到公众号
+     */
+    PublicAccount findByHost(String host);
 }

@@ -1,15 +1,30 @@
 package me.jiangcai.wx.web.thymeleaf;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.thymeleaf.dialect.IDialect;
 import org.thymeleaf.dialect.IProcessorDialect;
 import org.thymeleaf.processor.IProcessor;
+import org.thymeleaf.standard.processor.StandardXmlNsTagProcessor;
+import org.thymeleaf.templatemode.TemplateMode;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
  * @author CJ
  */
-public class WeixinDialect implements IDialect,IProcessorDialect {
+@Component
+public class WeixinDialect implements IDialect, IProcessorDialect {
+
+    private final Set<IProcessor> processors;
+
+    @Autowired
+    public WeixinDialect(Set<WeixinProcessor> weixinProcessors) {
+        processors = new HashSet<>();
+        processors.add(new StandardXmlNsTagProcessor(TemplateMode.HTML, getPrefix()));
+        weixinProcessors.forEach(processors::add);
+    }
 
     @Override
     public String getName() {
@@ -28,6 +43,6 @@ public class WeixinDialect implements IDialect,IProcessorDialect {
 
     @Override
     public Set<IProcessor> getProcessors(String dialectPrefix) {
-        return null;
+        return processors;
     }
 }

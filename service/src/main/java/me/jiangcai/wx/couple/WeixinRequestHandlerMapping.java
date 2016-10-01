@@ -25,7 +25,7 @@ import java.lang.reflect.Method;
 public class WeixinRequestHandlerMapping implements HandlerMapping {
 
     private static final Log log = LogFactory.getLog(WeixinRequestHandlerMapping.class);
-
+    private final ThreadLocal<PublicAccount> publicAccountThreadLocal = new ThreadLocal<>();
     @Autowired(required = false)
     private PublicAccountSupplier publicAccountSupplier;
     @Autowired
@@ -34,10 +34,8 @@ public class WeixinRequestHandlerMapping implements HandlerMapping {
     private Debug debug;
     @Autowired
     private Environment environment;
-
     private HandlerMethod helloHandler;
     private HandlerMethod receiveHandler;
-    private final ThreadLocal<PublicAccount> publicAccountThreadLocal = new ThreadLocal<>();
 
     public PublicAccount currentPublicAccount() {
         return publicAccountThreadLocal.get();
@@ -105,5 +103,9 @@ public class WeixinRequestHandlerMapping implements HandlerMapping {
         if (debug != null && Debug.work(environment))
             return new HandlerInterceptor[]{debug};
         return null;
+    }
+
+    public void updateCurrentAccount(PublicAccount account) {
+        publicAccountThreadLocal.set(account);
     }
 }

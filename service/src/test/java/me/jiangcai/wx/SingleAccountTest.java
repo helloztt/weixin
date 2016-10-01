@@ -4,10 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.jiangcai.lib.test.SpringWebTest;
 import me.jiangcai.wx.couple.debug.DebugFilter;
-import me.jiangcai.wx.model.PublicAccount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockFilterConfig;
 import org.springframework.test.context.ContextConfiguration;
@@ -19,8 +17,6 @@ import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -28,12 +24,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
  * @author CJ
  */
 @WebAppConfiguration
-@ContextConfiguration(classes = {WeixinSpringConfig.class, SingleAccountTest.Config.class})
+@ContextConfiguration(classes = {WeixinSpringConfig.class, SingleAccountSpringConfig.class})
 public abstract class SingleAccountTest extends SpringWebTest {
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     protected ApplicationContext applicationContext;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     protected DefaultMockMvcBuilder buildMockMVC(DefaultMockMvcBuilder builder) {
@@ -96,21 +92,4 @@ public abstract class SingleAccountTest extends SpringWebTest {
     }
 
 
-    static class Config {
-        @Bean
-        public PublicAccountSupplier publicAccountSupplier() {
-            return new PublicAccountSupplier() {
-                @Override
-                public List<PublicAccount> getAccounts() {
-                    return Collections.singletonList(new DebugPublicAccount());
-                }
-
-                @Override
-                public PublicAccount findByIdentifier(String identifier) {
-                    return new DebugPublicAccount();
-                }
-            };
-        }
-
-    }
 }

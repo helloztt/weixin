@@ -12,6 +12,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.env.Environment;
+import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -21,6 +22,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 出于必要,应该提供一个{@link PublicAccountSupplier 公众号提供者}
@@ -34,19 +36,29 @@ import java.util.List;
 public class WeixinSpringConfig extends WebMvcConfigurerAdapter {
 
     private static final Log log = LogFactory.getLog(WeixinSpringConfig.class);
-
-    @Override
-    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-        super.configureMessageConverters(converters);
-        converters.add(new MessageConverter());
-    }
-
     @Autowired
     private WeixinRequestHandlerMapping weixinRequestHandlerMapping;
     @Autowired(required = false)
     private Debug debug;
     @Autowired
     private Environment environment;
+
+    @Override
+    public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+        super.extendMessageConverters(converters);
+
+        List<HttpMessageConverter<?>> compatibles = converters.stream()
+                .filter(httpMessageConverter -> httpMessageConverter.getSupportedMediaTypes().stream()
+                        .filter(mediaType -> mediaType.isCompatibleWith(MediaType.TEXT_XML))
+                        .findFirst().isPresent())
+                .collect(Collectors.toList());
+
+        converters.removeAll(compatibles);
+
+        converters.add(new MessageConverter());
+
+        converters.addAll(compatibles);
+    }
 
 //    @Override
 //    public void addInterceptors(InterceptorRegistry registry) {
