@@ -1,9 +1,8 @@
 package me.jiangcai.wxtest.config;
 
 import me.jiangcai.wx.MessageReply;
-import me.jiangcai.wx.PublicAccountSupplier;
+import me.jiangcai.wx.SingleAccountSpringConfig;
 import me.jiangcai.wx.classic.ClassicMessageReply;
-import me.jiangcai.wx.model.PublicAccount;
 import me.jiangcai.wx.web.WeixinWebSpringConfig;
 import me.jiangcai.wx.web.thymeleaf.WeixinDialect;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
@@ -23,52 +23,14 @@ import org.thymeleaf.spring4.view.ThymeleafViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
-import java.util.Collections;
-import java.util.List;
-
 /**
  * @author CJ
  */
 @Configuration
-@Import({WeixinWebSpringConfig.class, MyConfig.Config.class})
+@Import({MyConfig.Pre.class, SingleAccountSpringConfig.class, WeixinWebSpringConfig.class, MyConfig.Config.class})
 @ComponentScan("me.jiangcai.wxtest.controller")
 @EnableWebMvc
 public class MyConfig extends WebMvcConfigurerAdapter {
-
-    private final PublicAccount account;
-
-    public MyConfig() {
-        account = publicAccount();
-    }
-
-    @Bean
-    public PublicAccountSupplier publicAccountSupplier() {
-        return new PublicAccountSupplier() {
-            @Override
-            public List<PublicAccount> getAccounts() {
-                return Collections.singletonList(account);
-            }
-
-            @Override
-            public PublicAccount findByIdentifier(String identifier) {
-                return account;
-            }
-
-            @Override
-            public PublicAccount findByHost(String host) {
-                return account;
-            }
-        };
-    }
-
-    private PublicAccount publicAccount() {
-        PublicAccount publicAccount = new PublicAccount();
-        publicAccount.setAppID("wx59b0162cdf0967af");
-        publicAccount.setAppSecret("ffcf655fce7c4175bbddae7b594c4e27");
-        publicAccount.setInterfaceURL("http://wxtest.jiangcai.me/wxtest/");
-        publicAccount.setInterfaceToken("jiangcai");
-        return publicAccount;
-    }
 
     @Bean
     public MessageReply messageReply() {
@@ -80,6 +42,12 @@ public class MyConfig extends WebMvcConfigurerAdapter {
         super.addViewControllers(registry);
         registry.addViewController("/js.html")
                 .setViewName("js.html");
+    }
+
+    @Configuration
+    @PropertySource("classpath:/demo.properties")
+    static class Pre {
+
     }
 
     @Configuration

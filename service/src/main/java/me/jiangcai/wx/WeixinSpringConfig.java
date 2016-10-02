@@ -12,7 +12,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.env.Environment;
-import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -22,7 +21,6 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 出于必要,应该提供一个{@link PublicAccountSupplier 公众号提供者}
@@ -47,17 +45,18 @@ public class WeixinSpringConfig extends WebMvcConfigurerAdapter {
     public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
         super.extendMessageConverters(converters);
 
-        List<HttpMessageConverter<?>> compatibles = converters.stream()
-                .filter(httpMessageConverter -> httpMessageConverter.getSupportedMediaTypes().stream()
-                        .filter(mediaType -> mediaType.isCompatibleWith(MediaType.TEXT_XML))
-                        .findFirst().isPresent())
-                .collect(Collectors.toList());
-
-        converters.removeAll(compatibles);
-
-        converters.add(new MessageConverter());
-
-        converters.addAll(compatibles);
+        converters.add(0, new MessageConverter());
+//        List<HttpMessageConverter<?>> compatibles = converters.stream()
+//                .filter(httpMessageConverter -> httpMessageConverter.getSupportedMediaTypes().stream()
+//                        .filter(mediaType -> mediaType.isCompatibleWith(MediaType.TEXT_XML))
+//                        .findFirst().isPresent())
+//                .collect(Collectors.toList());
+//
+//        converters.removeAll(compatibles);
+//
+//        converters.add(new MessageConverter());
+//
+//        converters.addAll(compatibles);
     }
 
 //    @Override

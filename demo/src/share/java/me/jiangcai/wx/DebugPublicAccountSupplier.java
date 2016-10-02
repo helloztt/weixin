@@ -9,18 +9,25 @@ import java.util.List;
  * @author CJ
  */
 public class DebugPublicAccountSupplier implements PublicAccountSupplier {
+
+    private final PublicAccount publicAccount;
+
+    public DebugPublicAccountSupplier(String url) {
+        publicAccount = new DebugPublicAccount(url);
+    }
+
     @Override
     public List<PublicAccount> getAccounts() {
-        return Collections.singletonList(new DebugPublicAccount());
+        return Collections.singletonList(publicAccount);
     }
 
     @Override
     public PublicAccount findByIdentifier(String identifier) {
-        return new DebugPublicAccount();
+        return publicAccount;
     }
 
     @Override
     public PublicAccount findByHost(String host) {
-        return new DebugPublicAccount();
+        return publicAccount;
     }
 }

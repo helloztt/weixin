@@ -55,22 +55,22 @@
 
     <build>
         <plugins>
-            <!--添加一个测试源文件夹-->
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>1.9.1</version>
+                <artifactId>maven-resources-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>add-test-source</id>
-                        <phase>generate-test-sources</phase>
+                        <id>copy-demo-code</id>
+                        <phase>validate</phase>
                         <goals>
-                            <goal>add-test-source</goal>
+                            <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <sources>
-                                <source>../_public/test/java</source>
-                            </sources>
+                            <outputDirectory>target/generated-test-sources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>../demo/src/share/java</directory>
+                                </resource>
+                            </resources>
                         </configuration>
                     </execution>
                 </executions>
