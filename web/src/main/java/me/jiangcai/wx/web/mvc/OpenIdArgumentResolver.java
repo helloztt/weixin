@@ -11,12 +11,14 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 /**
  * @author CJ
@@ -45,10 +47,23 @@ public class OpenIdArgumentResolver implements HandlerMethodArgumentResolver {
             throw new IllegalArgumentException("OpenId only work in weixin.");
 
         // 先看下是否可以直接完成
+        HttpSession session = webRequest.getNativeRequest(HttpServletRequest.class).getSession();
+        final String SK_Prefix_OpenID = "_weixin_openId_";
+        if (session != null) {
+            String openId = (String) session.getAttribute(SK_Prefix_OpenID + account.getAppID());
+            if (!StringUtils.isEmpty(openId))
+                return openId;
+        }
+
+        // 是否已获得code
         String code = webRequest.getParameter("code");
         if (code != null) {
             log.debug("get  web-auth success for code:" + code);
-            return Protocol.forAccount(account).userToken(code, weixinUserService);
+            String openId = Protocol.forAccount(account).userToken(code, weixinUserService);
+            if (session != null) {
+                session.setAttribute(SK_Prefix_OpenID + account.getAppID(), openId);
+            }
+            return openId;
         }
 
         // 这个请求必须为一个get请求

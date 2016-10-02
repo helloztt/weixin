@@ -9,6 +9,8 @@ import me.jiangcai.wx.web.WebTest;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * @author CJ
  */
@@ -16,6 +18,15 @@ public class OpenIdArgumentResolverTest extends WebTest {
 
     @Autowired
     private PublicAccountSupplier publicAccountSupplier;
+
+    //    @Test
+    public void code() {
+        // 这里是因为我们拿到了现成的code 所以来试验 实际上是不可能获得的
+        Protocol protocol = Protocol.forAccount(publicAccountSupplier.findByHost(null));
+        String id = protocol.userToken("011ptEbp0SkSMc1Xf08p0adJbp0ptEbx", null);
+        assertThat(id)
+                .isNotEmpty();
+    }
 
     @Test
     public void go() throws Exception {
