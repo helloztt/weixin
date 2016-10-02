@@ -54,23 +54,49 @@
     </dependencies>
 
     <build>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+            <testResource>
+                <directory>../demo/src/share/resources</directory>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
+                <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>copy-demo-code</id>
-                        <phase>validate</phase>
+                        <phase>process-classes</phase>
                         <goals>
-                            <goal>copy-resources</goal>
+                            <goal>run</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>target/generated-test-sources</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>../demo/src/share/java</directory>
-                                </resource>
-                            </resources>
+                            <tasks>
+                                <echo>copy demo files</echo>
+                                <copy todir="target/demo-sources">
+                                    <fileset dir="../demo/src/share/java"/>
+                                </copy>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.9.1</version>
+                <executions>
+                    <execution>
+                        <id>add-test-source</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>target/demo-sources</source>
+                            </sources>
                         </configuration>
                     </execution>
                 </executions>

@@ -1,4 +1,4 @@
-package me.jiangcai.wx.web.test;
+package me.jiangcai.wx.web.controller;
 
 import me.jiangcai.wx.OpenId;
 import org.springframework.stereotype.Controller;
