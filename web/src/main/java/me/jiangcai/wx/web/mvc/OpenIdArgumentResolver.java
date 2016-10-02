@@ -6,6 +6,8 @@ import me.jiangcai.wx.couple.WeixinRequestHandlerMapping;
 import me.jiangcai.wx.model.PublicAccount;
 import me.jiangcai.wx.protocol.Protocol;
 import me.jiangcai.wx.web.flow.RedirectException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
@@ -21,6 +23,8 @@ import javax.servlet.http.HttpServletRequest;
  */
 @Component
 public class OpenIdArgumentResolver implements HandlerMethodArgumentResolver {
+
+    private static final Log log = LogFactory.getLog(OpenIdArgumentResolver.class);
 
     @Autowired
     private WeixinRequestHandlerMapping mapping;
@@ -43,6 +47,7 @@ public class OpenIdArgumentResolver implements HandlerMethodArgumentResolver {
         // 先看下是否可以直接完成
         String code = webRequest.getParameter("code");
         if (code != null) {
+            log.debug("get  web-auth success for code:" + code);
             return Protocol.forAccount(account).userToken(code, weixinUserService);
         }
 

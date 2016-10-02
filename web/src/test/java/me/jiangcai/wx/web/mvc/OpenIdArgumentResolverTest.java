@@ -21,7 +21,7 @@ public class OpenIdArgumentResolverTest extends WebTest {
     public void go() throws Exception {
         // 首先伪装成一个微信的环境啦
 
-        driver.get("http://weixin.jiangcai.me/openIdTest");
+        driver.get("http://wxtest.jiangcai.me/openIdTest");
 
         System.out.println(driver.getPageSource());
         System.out.println(driver.getCurrentUrl());

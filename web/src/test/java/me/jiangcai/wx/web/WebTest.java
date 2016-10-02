@@ -24,7 +24,7 @@ public abstract class WebTest extends BaseTest {
     protected void createWebDriver() {
         driver = MockMvcHtmlUnitDriverBuilder
                 .mockMvcSetup(mockMvc)
-                .useMockMvcForHosts("weixin.jiangcai.me")
+                .useMockMvcForHosts("wxtest.jiangcai.me")
 //                .useMockMvcForHosts("")
                 .withDelegate(new WebConnectionHtmlUnitDriver() {
                     @Override

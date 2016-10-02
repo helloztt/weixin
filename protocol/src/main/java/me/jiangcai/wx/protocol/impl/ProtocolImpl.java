@@ -82,37 +82,19 @@ class ProtocolImpl implements Protocol {
 
     @Override
     public String baseRedirectUrl(String url) {
-//        url = "http://www.baidu.com";
-//        https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx520c15f417810387
-        StringBuilder stringBuilder = new StringBuilder("https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx520c15f417810387");
-
-        // &redirect_uri=https%3A%2F%2Fchong.qq.com%2Fphp%2Findex.php%3Fd%3D%26c%3DwxAdapter%26m%3DmobileDeal%26showwxpaytitle%3D1%26vb2ctag%3D4_2030_5_1194_60
-        // &response_type=code&scope=snsapi_base&state=123#wechat_redirect
+        final String type = "snsapi_base";
+        StringBuilder stringBuilder = new StringBuilder("https://open.weixin.qq.com/connect/oauth2/authorize?appid=");
+        stringBuilder.append(account.getAppID());
         try {
             stringBuilder.append("&redirect_uri=").append(URLEncoder.encode(url, "UTF-8"));
         } catch (UnsupportedEncodingException e) {
             throw new InternalError(e);
         }
-        stringBuilder.append("&response_type=code&scope=snsapi_base&state=123#wechat_redirect");
+        stringBuilder.append("&response_type=code&scope=")
+                .append(type)
+                .append("#wechat_redirect");
+        //&state=123
         return stringBuilder.toString();
-
-
-//        StringBuilder urlBuilder = new StringBuilder("https://open.weixin.qq.com/connect/oauth2/authorize?");
-//        urlBuilder.append("appid=").append(account.getAppID());
-//        try {
-//            urlBuilder.append("&redirect_uri=").append(URLEncoder.encode(url, "UTF-8"));
-//        } catch (UnsupportedEncodingException e) {
-//            throw new InternalError(e);
-//        }
-////        urlBuilder.append("&response_type=code")
-////                .append("&scope=").append("snsapi_base");
-////        urlBuilder.append("&state=");
-////
-////        urlBuilder.append("#wechat_redirect");
-//
-//        urlBuilder.append("&response_type=code&scope=snsapi_base&state=123#wechat_redirect");
-//
-//        return urlBuilder.toString();
     }
 
     @Override

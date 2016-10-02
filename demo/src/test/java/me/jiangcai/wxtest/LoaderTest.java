@@ -14,9 +14,6 @@ import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder;
 
 import javax.servlet.ServletException;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-
 /**
  * @author CJ
  */
@@ -51,15 +48,6 @@ public class LoaderTest extends SpringWebTest {
                 .build();
     }
 
-    @Test
-    public void aaaa() throws Exception {
-        mockMvc.perform(post(""));
-        mockMvc.perform(get(""));
-
-//        mockMvc.perform(get("/haha")).andDo(print());
-//        mockMvc.perform(get("/?signature=1f9a617a5593c0f5be9875d76223e57992eda1d3&echostr=1189703700494924542&timestamp=1473647356&nonce=1135788657"))
-//                .andExpect(content().string("1189703700494924542"));
-    }
 
     @Test
     public void js() throws Exception {
