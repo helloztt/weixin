@@ -12,4 +12,6 @@ public class ErrorResponse {
     private int code;
     @JsonProperty("errmsg")
     private String message;
+    @JsonProperty("msgid")
+    private String messageId;
 }

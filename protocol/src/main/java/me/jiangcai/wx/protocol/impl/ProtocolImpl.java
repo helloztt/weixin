@@ -1,9 +1,13 @@
 package me.jiangcai.wx.protocol.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import me.jiangcai.wx.WeixinUserService;
 import me.jiangcai.wx.model.Menu;
 import me.jiangcai.wx.model.PublicAccount;
+import me.jiangcai.wx.model.Template;
+import me.jiangcai.wx.model.TemplateList;
 import me.jiangcai.wx.protocol.Protocol;
+import me.jiangcai.wx.protocol.TemplateParameter;
 import me.jiangcai.wx.protocol.exception.ClientException;
 import me.jiangcai.wx.protocol.exception.ProtocolException;
 import me.jiangcai.wx.protocol.impl.handler.AccessTokenHandler;
@@ -30,6 +34,10 @@ import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  * @author CJ
@@ -37,6 +45,7 @@ import java.time.LocalDateTime;
 class ProtocolImpl implements Protocol {
 
     private static final Log log = LogFactory.getLog(ProtocolImpl.class);
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final PublicAccount account;
     private final CloseableHttpClient client;
@@ -73,6 +82,7 @@ class ProtocolImpl implements Protocol {
 
     @Override
     public String baseRedirectUrl(String url) {
+//        url = "http://www.baidu.com";
 //        https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx520c15f417810387
         StringBuilder stringBuilder = new StringBuilder("https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx520c15f417810387");
 
@@ -123,26 +133,49 @@ class ProtocolImpl implements Protocol {
 
     }
 
-    private HttpGet newGetUrl(String urlWith, NameValuePair... parameters) {
-        return new HttpGet(buildUrlWithUrl(urlWith, parameters));
+    @Override
+    public Optional<Template> findTemplate(Predicate<Template> predicate) throws ProtocolException {
+        HttpGet getTemplate = newGet("/template/get_all_private_template");
+        try {
+            TemplateList list = client.execute(getTemplate, new WeixinResponseHandler<>(TemplateList.class));
+            return list.getList().stream().filter(predicate)
+                    .findAny();
+        } catch (IOException e) {
+            throw new ProtocolException(e);
+        }
     }
 
     @Override
-    public void createMenu(Menu[] menus) throws ProtocolException {
-        HttpPost postMenu = newPost("/menu/create");
+    public void sendTemplate(String openId, String templateId, String url, TemplateParameter... parameters) throws ProtocolException {
+        HttpPost postMenu = newPost("/message/template/send");
 
-        HttpEntity entity = EntityBuilder.create()
-                .setText(Menu.toContent(menus))
-                .build();
+        HashMap<String, Object> toPost = new HashMap<>();
+        toPost.put("touser", openId);
+        toPost.put("template_id", templateId);
+        toPost.put("url", url);
+        HashMap<String, Object> data = new HashMap<>();
+        toPost.put("data", data);
+        Stream.of(parameters)
+                .forEach(templateParameter -> {
+                    HashMap<String, String> map = new HashMap<>();
+                    map.put("value", templateParameter.getValue());
+                    map.put("color", "#173177");
+                    data.put(templateParameter.getName(), map);
+                });
 
-        postMenu.setEntity(entity);
 
         try {
+            HttpEntity entity = EntityBuilder.create()
+                    .setText(objectMapper.writeValueAsString(toPost))
+                    .build();
+
+            postMenu.setEntity(entity);
             client.execute(postMenu, new VoidHandler());
         } catch (IOException ex) {
             throw new ClientException(ex);
         }
     }
+
 
     // http://mp.weixin.qq.com/wiki/11/74ad127cc054f6b80759c40f77ec03db.html#.E9.99.84.E5.BD.951-JS-SDK.E4.BD.BF.E7.94.A8.E6.9D.83.E9.99.90.E7.AD.BE.E5.90.8D.E7.AE.97.E6.B3.95
     @Override
@@ -168,6 +201,27 @@ class ProtocolImpl implements Protocol {
             return new String(Hex.encode(messageDigest.digest()));
         } catch (UnsupportedEncodingException | NoSuchAlgorithmException e) {
             throw new InternalError(e);
+        }
+    }
+
+    private HttpGet newGetUrl(String urlWith, NameValuePair... parameters) {
+        return new HttpGet(buildUrlWithUrl(urlWith, parameters));
+    }
+
+    @Override
+    public void createMenu(Menu[] menus) throws ProtocolException {
+        HttpPost postMenu = newPost("/menu/create");
+
+        HttpEntity entity = EntityBuilder.create()
+                .setText(Menu.toContent(menus))
+                .build();
+
+        postMenu.setEntity(entity);
+
+        try {
+            client.execute(postMenu, new VoidHandler());
+        } catch (IOException ex) {
+            throw new ClientException(ex);
         }
     }
 

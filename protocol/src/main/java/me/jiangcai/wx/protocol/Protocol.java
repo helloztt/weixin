@@ -3,9 +3,13 @@ package me.jiangcai.wx.protocol;
 import me.jiangcai.wx.WeixinUserService;
 import me.jiangcai.wx.model.Menu;
 import me.jiangcai.wx.model.PublicAccount;
+import me.jiangcai.wx.model.Template;
 import me.jiangcai.wx.protocol.exception.ProtocolException;
 import me.jiangcai.wx.protocol.impl.ProtocolCallback;
 import org.springframework.cglib.proxy.Enhancer;
+
+import java.util.Optional;
+import java.util.function.Predicate;
 
 /**
  * @author CJ
@@ -60,4 +64,23 @@ public interface Protocol {
      * @throws ProtocolException
      */
     String userToken(String code, WeixinUserService weixinUserService) throws ProtocolException;
+
+    /**
+     * 寻找某一个消息模板
+     *
+     * @param predicate 过滤器
+     * @return 返回任意一个符合过滤器的
+     * @throws ProtocolException
+     */
+    Optional<Template> findTemplate(Predicate<Template> predicate) throws ProtocolException;
+
+    /**
+     * 发送消息模板
+     *
+     * @param openId     收件人的openId;只有关注了公众号的才可以接受到模板消息
+     * @param templateId 模板id
+     * @param url        这个消息相关的url
+     * @param parameters 参数,参数可不需要什么.DATA
+     */
+    void sendTemplate(String openId, String templateId, String url, TemplateParameter... parameters) throws ProtocolException;
 }
