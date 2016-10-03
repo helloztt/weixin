@@ -28,7 +28,7 @@ public class ProtocolTest {
     }
 
     // 临时测试
-    @Test
+//    @Test
     public void temp() throws IOException {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpGet test = new HttpGet("https://api.weixin.qq.com/sns/userinfo?&access_token=1XxIVR2GBztecC5HmbRx22r98I5q9nY4_HGbxOGJ5NCXddgQ04iZIZJlr-n1Vtm5sYEDSZgoaPS1pjkBD-tE5icEdBRtDzJJIcYQi2cJPkM&openid=oiKvNt0neOAB8ddS0OzM_7QXQDZw&lang=zh_CN");
