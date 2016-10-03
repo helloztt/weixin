@@ -22,6 +22,12 @@
             <artifactId>weixin-web</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>me.jiangcai.lib</groupId>
+            <artifactId>test</artifactId>
+            <version>${jiangcai.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
