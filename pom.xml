@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -13,11 +13,11 @@
     <description>微信开发相关的库</description>
 
     <modules>
-        <module>protocol</module>
-        <module>api</module>
-        <module>service</module>
+        <module>weixin-protocol</module>
+        <module>weixin-api</module>
+        <module>weixin-service</module>
         <module>demo</module>
-        <module>web</module>
+        <module>weixin-web</module>
     </modules>
 
     <!--<distributionManagement></distributionManagement>-->
