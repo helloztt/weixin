@@ -2,9 +2,15 @@ package me.jiangcai.wx.protocol;
 
 import me.jiangcai.wx.model.Menu;
 import me.jiangcai.wx.model.MenuType;
+import me.jiangcai.wx.model.WeixinUserDetail;
+import me.jiangcai.wx.protocol.impl.handler.WeixinResponseHandler;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Random;
 import java.util.UUID;
 
@@ -19,6 +25,17 @@ public class ProtocolTest {
     @Before
     public void init(){
         protocol = Protocol.forAccount(new me.jiangcai.wx.DebugPublicAccount());
+    }
+
+    // 临时测试
+    @Test
+    public void temp() throws IOException {
+        try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
+            HttpGet test = new HttpGet("https://api.weixin.qq.com/sns/userinfo?&access_token=1XxIVR2GBztecC5HmbRx22r98I5q9nY4_HGbxOGJ5NCXddgQ04iZIZJlr-n1Vtm5sYEDSZgoaPS1pjkBD-tE5icEdBRtDzJJIcYQi2cJPkM&openid=oiKvNt0neOAB8ddS0OzM_7QXQDZw&lang=zh_CN");
+
+            WeixinUserDetail detail = client.execute(test, new WeixinResponseHandler<>(WeixinUserDetail.class));
+            System.out.println(detail);
+        }
     }
 
     @Test

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>详情</title>
+</head>
+<body>
+
+<!--/*@thymesVar id="detail" type="me.jiangcai.wx.model.WeixinUserDetail"*/-->
+
+<label>ID:</label>
+<span th:text="${detail.openId}">不止</span><br/>
+<label>昵称:</label>
+<span th:text="${detail.nickname}">不止</span><br/>
+<label>性别:</label>
+<span th:text="${detail.gender}">不止</span><br/>
+<label>省份:</label>
+<span th:text="${detail.province}">不止</span><br/>
+<label>城市:</label>
+<span th:text="${detail.city}">不止</span><br/>
+<label>国家:</label>
+<span th:text="${detail.country}">不止</span><br/>
+<label>头像:</label>
+<img src="http://p.ishowx.com/uploads/allimg/160928/486-16092Q45357-50.jpg"
+     th:src="${detail.headImageUrl}"
+/><br/>
+<!--权限 privilege-->
+<div>
+    范围
+    <ul>
+        <li th:each="str:${detail.privilege}" th:text="${str}">what?</li>
+    </ul>
+</div>
+
+
+</body>
+</html>

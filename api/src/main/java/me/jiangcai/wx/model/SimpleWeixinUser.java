@@ -16,7 +16,6 @@ public class SimpleWeixinUser implements WeixinUser {
     private String accessToken;
     private LocalDateTime accessTimeToExpire;
     private String refreshToken;
-    private String tokenScopes;
-
+    private String[] tokenScopes;
 
 }

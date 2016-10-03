@@ -1,9 +1,9 @@
-package me.jiangcai.wx.protocol.impl.response;
+package me.jiangcai.wx.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Data;
-import me.jiangcai.wx.protocol.converter.ScopeDeserializer;
+import me.jiangcai.wx.converter.ScopeDeserializer;
 
 /**
  * @author CJ
@@ -19,6 +19,9 @@ public class UserAccessResponse {
     private String refreshToken;
     @JsonProperty("openid")
     private String openId;
+    /**
+     * snsapi_base
+     */
     @JsonDeserialize(using = ScopeDeserializer.class)
     private String[] scope;
 

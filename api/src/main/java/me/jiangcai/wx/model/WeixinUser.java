@@ -1,5 +1,7 @@
 package me.jiangcai.wx.model;
 
+import java.util.Arrays;
+
 /**
  * 微信用户
  * 并不是关注了某一个公众账号的,但肯定是公众帐号相关的
@@ -35,9 +37,16 @@ public interface WeixinUser {
     /**
      * @return 这个token的使用范围
      */
-    String getTokenScopes();
+    String[] getTokenScopes();
 
-    void setTokenScopes(String tokenScopes);
+    void setTokenScopes(String[] tokenScopes);
 
+
+    /**
+     * @return 当前toke可以拉去详情么?
+     */
+    default boolean isAbleDetail() {
+        return Arrays.binarySearch(getTokenScopes(), "snsapi_userinfo") >= 0;
+    }
 
 }

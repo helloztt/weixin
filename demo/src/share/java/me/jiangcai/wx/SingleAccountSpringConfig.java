@@ -21,4 +21,9 @@ public class SingleAccountSpringConfig {
     public PublicAccountSupplier publicAccountSupplier() {
         return new DebugPublicAccountSupplier(environment.getProperty("account.url", "http://localhost/"));
     }
+
+    @Bean
+    public DemoWeixinUserService demoWeixinUserService() {
+        return new DemoWeixinUserService();
+    }
 }

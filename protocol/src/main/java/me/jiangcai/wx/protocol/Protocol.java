@@ -4,6 +4,7 @@ import me.jiangcai.wx.WeixinUserService;
 import me.jiangcai.wx.model.Menu;
 import me.jiangcai.wx.model.PublicAccount;
 import me.jiangcai.wx.model.Template;
+import me.jiangcai.wx.model.WeixinUserDetail;
 import me.jiangcai.wx.protocol.exception.ProtocolException;
 import me.jiangcai.wx.protocol.impl.ProtocolCallback;
 import org.springframework.cglib.proxy.Enhancer;
@@ -50,10 +51,11 @@ public interface Protocol {
     /**
      * 我要获得基本用户信息
      *
-     * @param url 原url
+     * @param url   原url
+     * @param clazz 希望获取的数据类型
      * @return 新url
      */
-    String baseRedirectUrl(String url);
+    String redirectUrl(String url, Class clazz);
 
     /**
      * 获取用户的{@link me.jiangcai.wx.model.WeixinUserDetail#openId}
@@ -64,6 +66,17 @@ public interface Protocol {
      * @throws ProtocolException
      */
     String userToken(String code, WeixinUserService weixinUserService) throws ProtocolException;
+
+    /**
+     * 获取用户详情
+     *
+     * @param openId            openId
+     * @param weixinUserService 服务
+     * @return 用户详情
+     * @throws me.jiangcai.wx.protocol.exception.BadAuthAccessException 刷不出可用的Token或者Scope不行
+     * @throws ProtocolException
+     */
+    WeixinUserDetail userDetail(String openId, WeixinUserService weixinUserService) throws ProtocolException;
 
     /**
      * 寻找某一个消息模板

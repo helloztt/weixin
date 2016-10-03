@@ -8,6 +8,8 @@ import lombok.Data;
  */
 @Data
 public class ErrorResponse {
+    @JsonProperty("openid")
+    private String openId;
     @JsonProperty("errcode")
     private int code;
     @JsonProperty("errmsg")

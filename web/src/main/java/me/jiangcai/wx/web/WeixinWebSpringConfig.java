@@ -3,6 +3,7 @@ package me.jiangcai.wx.web;
 import me.jiangcai.wx.WeixinSpringConfig;
 import me.jiangcai.wx.web.mvc.OpenIdArgumentResolver;
 import me.jiangcai.wx.web.mvc.WeixinInterceptor;
+import me.jiangcai.wx.web.mvc.WeixinUserDetailResolver;
 import me.jiangcai.wx.web.thymeleaf.JsProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
@@ -32,11 +33,14 @@ public class WeixinWebSpringConfig extends WeixinSpringConfig {
 
     @Autowired
     private OpenIdArgumentResolver openIdArgumentResolver;
+    @Autowired
+    private WeixinUserDetailResolver weixinUserDetailResolver;
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
         super.addArgumentResolvers(argumentResolvers);
         argumentResolvers.add(openIdArgumentResolver);
+        argumentResolvers.add(weixinUserDetailResolver);
     }
 
     @EnableWebMvc

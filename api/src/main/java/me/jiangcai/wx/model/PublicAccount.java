@@ -3,6 +3,7 @@ package me.jiangcai.wx.model;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.Locale;
 
 /**
  * 微信公众帐号
@@ -31,4 +32,7 @@ public class PublicAccount {
     private String javascriptTicket;
     private LocalDateTime javascriptTimeToExpire;
 
+    public Locale getLocale() {
+        return Locale.CHINA;
+    }
 }

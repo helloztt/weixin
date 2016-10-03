@@ -6,8 +6,12 @@ import me.jiangcai.wx.model.Menu;
 import me.jiangcai.wx.model.PublicAccount;
 import me.jiangcai.wx.model.Template;
 import me.jiangcai.wx.model.TemplateList;
+import me.jiangcai.wx.model.UserAccessResponse;
+import me.jiangcai.wx.model.WeixinUser;
+import me.jiangcai.wx.model.WeixinUserDetail;
 import me.jiangcai.wx.protocol.Protocol;
 import me.jiangcai.wx.protocol.TemplateParameter;
+import me.jiangcai.wx.protocol.exception.BadAuthAccessException;
 import me.jiangcai.wx.protocol.exception.ClientException;
 import me.jiangcai.wx.protocol.exception.ProtocolException;
 import me.jiangcai.wx.protocol.impl.handler.AccessTokenHandler;
@@ -15,7 +19,6 @@ import me.jiangcai.wx.protocol.impl.handler.VoidHandler;
 import me.jiangcai.wx.protocol.impl.handler.WeixinResponseHandler;
 import me.jiangcai.wx.protocol.impl.response.AccessToken;
 import me.jiangcai.wx.protocol.impl.response.JavascriptTicket;
-import me.jiangcai.wx.protocol.impl.response.UserAccessResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
@@ -81,8 +84,13 @@ class ProtocolImpl implements Protocol {
     }
 
     @Override
-    public String baseRedirectUrl(String url) {
-        final String type = "snsapi_base";
+    public String redirectUrl(String url, Class clazz) {
+        final String type;
+        if (clazz == String.class)
+            type = "snsapi_base";
+        else
+            type = "snsapi_userinfo";
+
         StringBuilder stringBuilder = new StringBuilder("https://open.weixin.qq.com/connect/oauth2/authorize?appid=");
         stringBuilder.append(account.getAppID());
         try {
@@ -107,12 +115,64 @@ class ProtocolImpl implements Protocol {
                 , new BasicNameValuePair("grant_type", "authorization_code"));
 
         try {
-            UserAccessResponse response = client.execute(get, new WeixinResponseHandler<>(UserAccessResponse.class));
+            UserAccessResponse response = workWithUserAuth(weixinUserService, get);
+
             return response.getOpenId();
         } catch (IOException e) {
             throw new ProtocolException(e);
         }
 
+    }
+
+    private UserAccessResponse workWithUserAuth(WeixinUserService weixinUserService, HttpGet get) throws IOException {
+        UserAccessResponse response = client.execute(get, new WeixinResponseHandler<>(UserAccessResponse.class));
+        if (log.isDebugEnabled()) {
+            log.debug("UserAccessResponse:" + response + "  scope:");
+            for (String s : response.getScope()) {
+                log.debug(s);
+            }
+        }
+
+        weixinUserService.updateUserToken(account, response);
+        return response;
+    }
+
+    @Override
+    public WeixinUserDetail userDetail(String openId, WeixinUserService weixinUserService) throws ProtocolException {
+        WeixinUser user = weixinUserService.getTokenInfo(account, openId);
+
+        if (user == null || !user.isAbleDetail()) {
+            throw new BadAuthAccessException();
+        }
+
+        try {
+
+            try {
+                return getWeixinUserDetail(openId, user);
+            } catch (BadAuthAccessException ex) {
+                // 刷新
+                HttpGet refresh = newGetUrl("https://api.weixin.qq.com/sns/oauth2/refresh_token?"
+                        , new BasicNameValuePair("appid", account.getAppID())
+                        , new BasicNameValuePair("grant_type", "refresh_token")
+                        , new BasicNameValuePair("refresh_token", user.getRefreshToken())
+                );
+                workWithUserAuth(weixinUserService, refresh);
+                return getWeixinUserDetail(openId, weixinUserService.getTokenInfo(account, openId));
+            }
+
+        } catch (IOException ex) {
+            throw new ProtocolException(ex);
+        }
+
+    }
+
+    private WeixinUserDetail getWeixinUserDetail(String openId, WeixinUser user) throws IOException {
+        HttpGet getInfo = newGetUrl("https://api.weixin.qq.com/sns/userinfo?"
+                , new BasicNameValuePair("access_token", user.getAccessToken())
+                , new BasicNameValuePair("openid", openId)
+                , new BasicNameValuePair("lang", account.getLocale().toString())
+        );
+        return client.execute(getInfo, new WeixinResponseHandler<>(WeixinUserDetail.class));
     }
 
     @Override
@@ -243,6 +303,7 @@ class ProtocolImpl implements Protocol {
                 throw new InternalError(e);
             }
         }
+        log.debug("[WEIXIN]" + urlBuilder.toString());
         return urlBuilder.toString();
     }
 
