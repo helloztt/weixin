@@ -5,5 +5,6 @@ package me.jiangcai.wx.message.support;
  */
 public enum WeixinEvent {
     subscribe,
-    unsubscribe
+    unsubscribe,
+    TEMPLATESENDJOBFINISH
 }
