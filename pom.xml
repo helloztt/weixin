@@ -18,6 +18,7 @@
         <module>weixin-service</module>
         <module>demo</module>
         <module>weixin-web</module>
+        <module>weixin-test</module>
     </modules>
 
     <!--<distributionManagement></distributionManagement>-->
