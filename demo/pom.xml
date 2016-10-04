@@ -16,7 +16,7 @@
     <dependencies>
         <dependency>
             <groupId>me.jiangcai.wx</groupId>
-            <artifactId>web</artifactId>
+            <artifactId>weixin-web</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

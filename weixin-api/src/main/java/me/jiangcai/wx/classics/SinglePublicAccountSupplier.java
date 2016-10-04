@@ -1,19 +1,21 @@
-package me.jiangcai.wx;
+package me.jiangcai.wx.classics;
 
+import me.jiangcai.wx.PublicAccountSupplier;
 import me.jiangcai.wx.model.PublicAccount;
 
 import java.util.Collections;
 import java.util.List;
 
 /**
+ * 只有一个公众号的
  * @author CJ
  */
-public class DebugPublicAccountSupplier implements PublicAccountSupplier {
+public class SinglePublicAccountSupplier implements PublicAccountSupplier {
 
     private final PublicAccount publicAccount;
 
-    public DebugPublicAccountSupplier(String url) {
-        publicAccount = new DebugPublicAccount(url);
+    public SinglePublicAccountSupplier(PublicAccount publicAccount) {
+        this.publicAccount = publicAccount;
     }
 
     @Override

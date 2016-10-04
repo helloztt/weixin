@@ -1,5 +1,6 @@
 package me.jiangcai.wx;
 
+import me.jiangcai.wx.classics.SinglePublicAccountSupplier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +20,8 @@ public class SingleAccountSpringConfig {
 
     @Bean
     public PublicAccountSupplier publicAccountSupplier() {
-        return new DebugPublicAccountSupplier(environment.getProperty("account.url", "http://localhost/"));
+        return new SinglePublicAccountSupplier
+                (new DebugPublicAccount(environment.getProperty("account.url", "http://localhost/")));
     }
 
     @Bean
