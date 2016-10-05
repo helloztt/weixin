@@ -9,7 +9,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
-import org.springframework.util.StringUtils;
 import org.thymeleaf.context.ITemplateContext;
 import org.thymeleaf.context.WebEngineContext;
 import org.thymeleaf.engine.AttributeName;
@@ -63,28 +62,38 @@ public class JsProcessor extends AbstractAttributeTagProcessor implements Weixin
 //        log.debug("start!");
 //    }
 
+    private static final String[] FixedAPI = new String[]{
+            "onMenuShareTimeline",
+            "onMenuShareAppMessage",
+            "onMenuShareQQ",
+            "onMenuShareWeibo",
+            "onMenuShareQZone"
+    };
+
     @Override
     protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName
             , String attributeValue, IElementTagStructureHandler structureHandler) {
         PublicAccount publicAccount = mapping.currentPublicAccount();
         assert publicAccount != null;
 
+        String[] namedApi = attributeValue.split(",");
+        String[] api = new String[namedApi.length + FixedAPI.length];
+
+        System.arraycopy(FixedAPI, 0, api, 0, FixedAPI.length);
+        System.arraycopy(namedApi, 0, api, FixedAPI.length, namedApi.length);
+
         // 把字符串列表改成json array格式
         String apiList;
-        if (StringUtils.isEmpty(attributeValue)) {
-            apiList = "{}";
-        } else {
-            StringBuilder builder = new StringBuilder();
-            builder.append("[");
-            String[] strings = attributeValue.split(",");
-            for (int i = 0; i < strings.length; i++) {
-                if (i > 0)
-                    builder.append(",");
-                builder.append("'").append(strings[i].trim()).append("'");
-            }
-            builder.append("]");
-            apiList = builder.toString();
+
+        StringBuilder apiBuilder = new StringBuilder();
+        apiBuilder.append("[");
+        for (int i = 0; i < api.length; i++) {
+            if (i > 0)
+                apiBuilder.append(",");
+            apiBuilder.append("'").append(api[i].trim()).append("'");
         }
+        apiBuilder.append("]");
+        apiList = apiBuilder.toString();
 
         structureHandler.removeBody();
 

@@ -22,6 +22,7 @@ import java.util.List;
  * 可获得thymeleaf扩展wx
  * <ul>
  * <li>js 可在页面中载入微信JS库以及相关授权 {@link JsProcessor}</li>
+ * <li>share 可在页面中定义自身分享时的信息以及相关前端回调 {@link me.jiangcai.wx.web.thymeleaf.ShareProcessor}</li>
  * </ul>
  *
  * @author CJ

@@ -45,6 +45,8 @@ public class JsProcessorTest extends WebTest {
             }
         });
 
+        System.out.println(driver.getPageSource());
+
     }
 
     @Configuration
