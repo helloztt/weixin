@@ -3,6 +3,7 @@ package me.jiangcai.wx.test.mvc;
 import me.jiangcai.wx.couple.WeixinRequestHandlerMapping;
 import me.jiangcai.wx.model.PublicAccount;
 import me.jiangcai.wx.test.WeixinUserMocker;
+import me.jiangcai.wx.web.exception.NoWeixinClientException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.util.StringUtils;
@@ -33,7 +34,7 @@ public class OpenIdArgumentResolver extends me.jiangcai.wx.web.mvc.OpenIdArgumen
 
         PublicAccount account = mapping.currentPublicAccount();
         if (account == null)
-            throw new IllegalArgumentException("OpenId only work in weixin.");
+            throw new NoWeixinClientException();
 
         HttpSession session = webRequest.getNativeRequest(HttpServletRequest.class).getSession();
 

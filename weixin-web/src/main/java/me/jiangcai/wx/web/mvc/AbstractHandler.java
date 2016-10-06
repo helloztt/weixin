@@ -5,6 +5,7 @@ import me.jiangcai.wx.couple.WeixinRequestHandlerMapping;
 import me.jiangcai.wx.model.PublicAccount;
 import me.jiangcai.wx.protocol.Protocol;
 import me.jiangcai.wx.protocol.exception.BadAuthAccessException;
+import me.jiangcai.wx.web.exception.NoWeixinClientException;
 import me.jiangcai.wx.web.flow.RedirectException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,7 +39,7 @@ public abstract class AbstractHandler {
 
         PublicAccount account = mapping.currentPublicAccount();
         if (account == null)
-            throw new IllegalArgumentException("OpenId only work in weixin.");
+            throw new NoWeixinClientException();
 
         try {
             // 先看下是否可以直接完成
