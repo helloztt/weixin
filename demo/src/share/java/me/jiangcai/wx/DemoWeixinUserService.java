@@ -19,13 +19,13 @@ public class DemoWeixinUserService implements WeixinUserService {
     private final HashMap<String, WeixinUser> tokens = new HashMap<>();
 
     @Override
-    public <T> T userInfo(PublicAccount account, String openId, Class<T> clazz) {
+    public <T> T userInfo(PublicAccount account, String openId, Class<T> clazz, Object data) {
         // 建议版本就不保存什么了 直接使用微信返回的
         if (clazz == String.class)
             //noinspection unchecked
             return (T) openId;
         if (clazz == WeixinUserDetail.class)
-            return (T) Protocol.forAccount(account).userDetail(openId, this, null);
+            return (T) Protocol.forAccount(account).userDetail(openId, this, data);
         throw new IllegalArgumentException(("unsupported type:" + clazz));
     }
 

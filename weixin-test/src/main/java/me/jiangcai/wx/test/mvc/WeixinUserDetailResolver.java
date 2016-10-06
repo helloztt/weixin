@@ -40,7 +40,7 @@ public class WeixinUserDetailResolver extends me.jiangcai.wx.web.mvc.WeixinUserD
         if (session != null) {
             String openId = (String) session.getAttribute(SK_Prefix_OpenID + account.getAppID());
             if (!StringUtils.isEmpty(openId)) {
-                WeixinUserDetail endValue = weixinUserService.userInfo(account, openId, WeixinUserDetail.class);
+                WeixinUserDetail endValue = weixinUserService.userInfo(account, openId, WeixinUserDetail.class, webRequest);
                 if (endValue != null)
                     return endValue;
             }

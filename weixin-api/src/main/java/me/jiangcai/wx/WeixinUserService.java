@@ -14,13 +14,14 @@ public interface WeixinUserService {
     /**
      * 获取用户详情
      *
+     * @param <T>     要求类型
      * @param account 公众账号
      * @param openId  openId
      * @param clazz   期望返回的数据类型
-     * @param <T>     要求类型
+     * @param data    可选,应用程序信息
      * @return 数据或者null
      */
-    <T> T userInfo(PublicAccount account, String openId, Class<T> clazz);
+    <T> T userInfo(PublicAccount account, String openId, Class<T> clazz, Object data);
 
     /**
      * 更新用户token

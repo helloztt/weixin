@@ -50,7 +50,7 @@ public abstract class AbstractHandler {
             if (session != null) {
                 String openId = (String) session.getAttribute(SK_Prefix_OpenID + account.getAppID());
                 if (!StringUtils.isEmpty(openId)) {
-                    endValue = weixinUserService.userInfo(account, openId, clazz);
+                    endValue = weixinUserService.userInfo(account, openId, clazz, webRequest);
                     if (endValue != null)
                         return endValue;
                 }
@@ -60,7 +60,7 @@ public abstract class AbstractHandler {
             String code = webRequest.getParameter("code");
             if (code != null) {
                 log.debug("get  web-auth success for code:" + code);
-                String openId = Protocol.forAccount(account).userToken(code, weixinUserService, null);
+                String openId = Protocol.forAccount(account).userToken(code, weixinUserService, webRequest);
                 if (session != null) {
                     session.setAttribute(SK_Prefix_OpenID + account.getAppID(), openId);
                     // 将code 去掉 再度重定向
@@ -74,7 +74,7 @@ public abstract class AbstractHandler {
                         throw new RedirectException(newUrl);
                     }
                 }
-                return weixinUserService.userInfo(account, openId, clazz);
+                return weixinUserService.userInfo(account, openId, clazz, webRequest);
             }
         } catch (BadAuthAccessException ex) {
             //

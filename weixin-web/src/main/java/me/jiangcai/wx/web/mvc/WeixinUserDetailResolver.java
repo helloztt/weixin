@@ -25,7 +25,7 @@ public class WeixinUserDetailResolver extends AbstractHandler implements Handler
             String openId = currentOpenId(webRequest, account);
             if (openId == null)
                 return null;
-            return weixinUserService.userInfo(account, openId, WeixinUserDetail.class);
+            return weixinUserService.userInfo(account, openId, WeixinUserDetail.class, webRequest);
         }, WeixinUserDetail.class);
     }
 }
