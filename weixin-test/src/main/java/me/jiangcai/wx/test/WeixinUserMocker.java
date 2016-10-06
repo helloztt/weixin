@@ -25,7 +25,7 @@ public interface WeixinUserMocker {
         detail.setGender(Gender.values()[random.nextInt(Gender.values().length)]);
         detail.setHeadImageUrl("http://p.ishowx.com/uploads/allimg/160928/486-16092Q45357-50.jpg");
         detail.setLocale(Locale.CHINA);
-        detail.setNickname(UUID.randomUUID().toString());
+        detail.setNickname(UUID.randomUUID().toString().replaceAll("-", "").substring(1, 10));
         detail.setPrivilege(new String[0]);
         detail.setProvince("牛神");
         return detail;
