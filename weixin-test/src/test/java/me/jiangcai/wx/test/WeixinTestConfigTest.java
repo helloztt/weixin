@@ -20,10 +20,10 @@ public class WeixinTestConfigTest extends SpringWebTest {
 
     @Test
     public void id() throws Exception {
-        mockMvc.perform(get("/openIdTest"))
+        mockMvc.perform(get("/openIdTest").header("user-agent", "MicroMessenger"))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(get("/userInfo"))
+        mockMvc.perform(get("/userInfo").header("user-agent", "MicroMessenger"))
                 .andExpect(status().isOk());
     }
 

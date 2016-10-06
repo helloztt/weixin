@@ -23,7 +23,7 @@ public class OpenIdArgumentResolverTest extends WebTest {
     public void code() {
         // 这里是因为我们拿到了现成的code 所以来试验 实际上是不可能获得的
         Protocol protocol = Protocol.forAccount(publicAccountSupplier.findByHost(null));
-        String id = protocol.userToken("011ptEbp0SkSMc1Xf08p0adJbp0ptEbx", null);
+        String id = protocol.userToken("011ptEbp0SkSMc1Xf08p0adJbp0ptEbx", null, null);
         assertThat(id)
                 .isNotEmpty();
     }

@@ -27,8 +27,9 @@ public interface WeixinUserService {
      *
      * @param account  公众账号
      * @param response 用户token信息
+     * @param data     可选,应用程序信息
      */
-    void updateUserToken(PublicAccount account, UserAccessResponse response);
+    void updateUserToken(PublicAccount account, UserAccessResponse response, Object data);
 
     /**
      * 获取用户token信息

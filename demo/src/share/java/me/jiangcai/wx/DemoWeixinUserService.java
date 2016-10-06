@@ -25,12 +25,12 @@ public class DemoWeixinUserService implements WeixinUserService {
             //noinspection unchecked
             return (T) openId;
         if (clazz == WeixinUserDetail.class)
-            return (T) Protocol.forAccount(account).userDetail(openId, this);
+            return (T) Protocol.forAccount(account).userDetail(openId, this, null);
         throw new IllegalArgumentException(("unsupported type:" + clazz));
     }
 
     @Override
-    public void updateUserToken(PublicAccount account, UserAccessResponse response) {
+    public void updateUserToken(PublicAccount account, UserAccessResponse response, Object data) {
         WeixinUser user = tokens.get(response.getOpenId());
         if (user == null) {
             user = new SimpleWeixinUser();

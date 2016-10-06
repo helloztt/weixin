@@ -106,7 +106,7 @@ class ProtocolImpl implements Protocol {
     }
 
     @Override
-    public String userToken(String code, WeixinUserService weixinUserService) throws ProtocolException {
+    public String userToken(String code, WeixinUserService weixinUserService, Object data) throws ProtocolException {
         // https://api.weixin.qq.com/sns/oauth2/access_token?appid=APPID&secret=SECRET&code=CODE&grant_type=authorization_code
         HttpGet get = newGetUrl("https://api.weixin.qq.com/sns/oauth2/access_token?"
                 , new BasicNameValuePair("appid", account.getAppID())
@@ -115,7 +115,7 @@ class ProtocolImpl implements Protocol {
                 , new BasicNameValuePair("grant_type", "authorization_code"));
 
         try {
-            UserAccessResponse response = workWithUserAuth(weixinUserService, get);
+            UserAccessResponse response = workWithUserAuth(weixinUserService, get, data);
 
             return response.getOpenId();
         } catch (IOException e) {
@@ -124,7 +124,7 @@ class ProtocolImpl implements Protocol {
 
     }
 
-    private UserAccessResponse workWithUserAuth(WeixinUserService weixinUserService, HttpGet get) throws IOException {
+    private UserAccessResponse workWithUserAuth(WeixinUserService weixinUserService, HttpGet get, Object data) throws IOException {
         UserAccessResponse response = client.execute(get, new WeixinResponseHandler<>(UserAccessResponse.class));
         if (log.isDebugEnabled()) {
             log.debug("UserAccessResponse:" + response + "  scope:");
@@ -133,12 +133,12 @@ class ProtocolImpl implements Protocol {
             }
         }
 
-        weixinUserService.updateUserToken(account, response);
+        weixinUserService.updateUserToken(account, response, data);
         return response;
     }
 
     @Override
-    public WeixinUserDetail userDetail(String openId, WeixinUserService weixinUserService) throws ProtocolException {
+    public WeixinUserDetail userDetail(String openId, WeixinUserService weixinUserService, Object data) throws ProtocolException {
         WeixinUser user = weixinUserService.getTokenInfo(account, openId);
 
         if (user == null || !user.isAbleDetail()) {
@@ -156,7 +156,7 @@ class ProtocolImpl implements Protocol {
                         , new BasicNameValuePair("grant_type", "refresh_token")
                         , new BasicNameValuePair("refresh_token", user.getRefreshToken())
                 );
-                workWithUserAuth(weixinUserService, refresh);
+                workWithUserAuth(weixinUserService, refresh, data);
                 return getWeixinUserDetail(openId, weixinUserService.getTokenInfo(account, openId));
             }
 

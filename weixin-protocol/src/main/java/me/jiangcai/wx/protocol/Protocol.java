@@ -4,6 +4,7 @@ import me.jiangcai.wx.WeixinUserService;
 import me.jiangcai.wx.model.Menu;
 import me.jiangcai.wx.model.PublicAccount;
 import me.jiangcai.wx.model.Template;
+import me.jiangcai.wx.model.UserAccessResponse;
 import me.jiangcai.wx.model.WeixinUserDetail;
 import me.jiangcai.wx.protocol.exception.ProtocolException;
 import me.jiangcai.wx.protocol.impl.ProtocolCallback;
@@ -58,25 +59,30 @@ public interface Protocol {
     String redirectUrl(String url, Class clazz);
 
     /**
-     * 获取用户的{@link me.jiangcai.wx.model.WeixinUserDetail#openId}
+     * 获取用户的{@link me.jiangcai.wx.model.WeixinUserDetail#openId},这个时候通常会引起
+     * {@link WeixinUserService#updateUserToken(PublicAccount, UserAccessResponse, Object)}的调用
      *
      * @param code              可以获取的code,用好就丢
      * @param weixinUserService 用于维护用户信息的服务
+     * @param data              可选附加数据,最终会影响{@link WeixinUserService#updateUserToken(PublicAccount, UserAccessResponse, Object)}
      * @return openId
      * @throws ProtocolException
+     * @see WeixinUserService#updateUserToken(PublicAccount, UserAccessResponse, Object)
      */
-    String userToken(String code, WeixinUserService weixinUserService) throws ProtocolException;
+    String userToken(String code, WeixinUserService weixinUserService, Object data) throws ProtocolException;
 
     /**
      * 获取用户详情
      *
      * @param openId            openId
      * @param weixinUserService 服务
+     * @param data              可选附加数据,最终会影响{@link WeixinUserService#updateUserToken(PublicAccount, UserAccessResponse, Object)}
      * @return 用户详情
      * @throws me.jiangcai.wx.protocol.exception.BadAuthAccessException 刷不出可用的Token或者Scope不行
      * @throws ProtocolException
+     * @see WeixinUserService#updateUserToken(PublicAccount, UserAccessResponse, Object)
      */
-    WeixinUserDetail userDetail(String openId, WeixinUserService weixinUserService) throws ProtocolException;
+    WeixinUserDetail userDetail(String openId, WeixinUserService weixinUserService, Object data) throws ProtocolException;
 
     /**
      * 寻找某一个消息模板

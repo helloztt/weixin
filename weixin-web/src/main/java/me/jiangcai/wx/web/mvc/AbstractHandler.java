@@ -60,7 +60,7 @@ public abstract class AbstractHandler {
             String code = webRequest.getParameter("code");
             if (code != null) {
                 log.debug("get  web-auth success for code:" + code);
-                String openId = Protocol.forAccount(account).userToken(code, weixinUserService);
+                String openId = Protocol.forAccount(account).userToken(code, weixinUserService, null);
                 if (session != null) {
                     session.setAttribute(SK_Prefix_OpenID + account.getAppID(), openId);
                     // 将code 去掉 再度重定向
