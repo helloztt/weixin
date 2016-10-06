@@ -59,6 +59,20 @@ public abstract class AbstractHandler {
 
             // 是否已获得code
             String code = webRequest.getParameter("code");
+
+//            StringBuilder stringBuilder = new StringBuilder();
+//            stringBuilder.append("[WXDEBUG]");
+//            HttpServletRequest _request = webRequest.getNativeRequest(HttpServletRequest.class);
+//            stringBuilder.append(_request.getRequestURL());
+//            stringBuilder.append("\n\r").append(code);
+//            Enumeration<String> stringEnumeration = _request.getParameterNames();
+//            while (stringEnumeration.hasMoreElements()){
+//                String name = stringEnumeration.nextElement();
+//                stringBuilder.append("\n\r").append(name).append(":").append(_request.getParameter(name));
+//            }
+//            log.error(stringBuilder.toString());
+
+
             if (code != null) {
                 log.debug("get  web-auth success for code:" + code);
                 String openId = Protocol.forAccount(account).userToken(code, weixinUserService, webRequest);

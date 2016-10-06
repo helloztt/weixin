@@ -34,6 +34,8 @@ public class WeixinInterceptor implements WebRequestInterceptor {
             PublicAccount account = publicAccountSupplier.findByHost(request.getHeader("host"));
             log.debug("public account" + account);
             handlerMapping.updateCurrentAccount(account);
+        } else {
+            handlerMapping.updateCurrentAccount(null);
         }
     }
 
