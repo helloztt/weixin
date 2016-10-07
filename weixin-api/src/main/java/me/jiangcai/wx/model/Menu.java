@@ -50,8 +50,6 @@ public class Menu {
         } else {
 
             assert menu.data != null;
-            //
-            // TODO 中文不行
             builder.append(",\"type\":\"");
             builder.append(menu.type.name()).append("\"");
             //

@@ -1,5 +1,7 @@
 package me.jiangcai.wx.protocol;
 
+import me.jiangcai.wx.PublicAccountSupplier;
+import me.jiangcai.wx.SingleAccountSpringConfig;
 import me.jiangcai.wx.model.Menu;
 import me.jiangcai.wx.model.MenuType;
 import me.jiangcai.wx.model.WeixinUserDetail;
@@ -9,6 +11,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
 import java.util.Random;
@@ -17,14 +23,19 @@ import java.util.UUID;
 /**
  * @author CJ
  */
+@ContextConfiguration(classes = SingleAccountSpringConfig.class)
+@RunWith(SpringJUnit4ClassRunner.class)
 public class ProtocolTest {
 
     Protocol protocol;
+    @Autowired
+    private PublicAccountSupplier supplier;
     private Random random = new Random();
 
     @Before
     public void init(){
-        protocol = Protocol.forAccount(new me.jiangcai.wx.DebugPublicAccount());
+//        protocol = Protocol.forAccount(new me.jiangcai.wx.DebugPublicAccount());
+        protocol = Protocol.forAccount(supplier.findByHost(null));
     }
 
     // 临时测试
@@ -49,7 +60,7 @@ public class ProtocolTest {
         // 固定的也写一个呗
         Menu menu4 = new Menu();
         menu4.setType(MenuType.view);
-        menu4.setName("debug1");
+        menu4.setName("2中文");
         menu4.setData("http://wxtest.jiangcai.me/wxtest/js.html");
 
         protocol.createMenu(new Menu[]{menu1, menu2, menu4});
@@ -57,7 +68,7 @@ public class ProtocolTest {
 
     private Menu randomMenu(boolean allowSub) {
         Menu menu = new Menu();
-        menu.setName(UUID.randomUUID().toString().substring(0,4));
+        menu.setName(UUID.randomUUID().toString().substring(0, 4) + "中");
         if (random.nextBoolean() && allowSub){
             int size = random.nextInt(5)+1;
             Menu[] subs = new Menu[size];

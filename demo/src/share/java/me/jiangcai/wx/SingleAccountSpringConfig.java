@@ -20,8 +20,15 @@ public class SingleAccountSpringConfig {
 
     @Bean
     public PublicAccountSupplier publicAccountSupplier() {
-        return new SinglePublicAccountSupplier
-                (new DebugPublicAccount(environment.getProperty("account.url", "http://localhost/")));
+        final DebugPublicAccount publicAccount = new DebugPublicAccount(environment.getProperty("account.url", "http://localhost/"));
+
+        final SinglePublicAccountSupplier singlePublicAccountSupplier = new SinglePublicAccountSupplier
+                (publicAccount);
+        publicAccount.setSupplier(singlePublicAccountSupplier);
+
+        singlePublicAccountSupplier.getTokens(publicAccount);
+
+        return singlePublicAccountSupplier;
     }
 
     @Bean

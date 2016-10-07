@@ -1,6 +1,7 @@
 package me.jiangcai.wx.protocol.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import me.jiangcai.wx.TokenType;
 import me.jiangcai.wx.WeixinUserService;
 import me.jiangcai.wx.model.Menu;
 import me.jiangcai.wx.model.PublicAccount;
@@ -26,6 +27,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.EntityBuilder;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
@@ -75,9 +77,16 @@ class ProtocolImpl implements Protocol {
                 throw new ProtocolException(token.getMessage());
 
             LocalDateTime time = LocalDateTime.now();
-            time.plusSeconds(token.getTime());
+            time = time.plusSeconds(token.getTime());
             account.setJavascriptTimeToExpire(time);
             account.setJavascriptTicket(token.getToken());
+
+            try {
+                account.getSupplier().updateToken(account, TokenType.javascript, token.getToken(), time);
+            } catch (Throwable throwable) {
+                log.debug("update tokens", throwable);
+            }
+
         } catch (IOException ex) {
             throw new ClientException(ex);
         }
@@ -208,6 +217,7 @@ class ProtocolImpl implements Protocol {
 
         try {
             HttpEntity entity = EntityBuilder.create()
+                    .setContentType(ContentType.create("application/json", "UTF-8"))
                     .setText(objectMapper.writeValueAsString(toPost))
                     .build();
 
@@ -255,6 +265,7 @@ class ProtocolImpl implements Protocol {
         HttpPost postMenu = newPost("/menu/create");
 
         HttpEntity entity = EntityBuilder.create()
+                .setContentType(ContentType.create("application/json", "UTF-8"))
                 .setText(Menu.toContent(menus))
                 .build();
 
@@ -273,9 +284,15 @@ class ProtocolImpl implements Protocol {
         try {
             AccessToken token = client.execute(tokenGet, new AccessTokenHandler());
             LocalDateTime time = LocalDateTime.now();
-            time.plusSeconds(token.getTime());
+            time = time.plusSeconds(token.getTime());
             account.setTimeToExpire(time);
             account.setAccessToken(token.getToken());
+
+            try {
+                account.getSupplier().updateToken(account, TokenType.access, token.getToken(), time);
+            } catch (Throwable throwable) {
+                log.debug("update tokens", throwable);
+            }
         } catch (IOException ex) {
             throw new ClientException(ex);
         }

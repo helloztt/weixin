@@ -1,6 +1,7 @@
 package me.jiangcai.wx.model;
 
 import lombok.Data;
+import me.jiangcai.wx.PublicAccountSupplier;
 
 import java.time.LocalDateTime;
 import java.util.Locale;
@@ -11,7 +12,7 @@ import java.util.Locale;
  * @author CJ
  */
 @Data
-public class PublicAccount {
+public abstract class PublicAccount {
 
     // 基本
     private String appID;
@@ -35,4 +36,9 @@ public class PublicAccount {
     public Locale getLocale() {
         return Locale.CHINA;
     }
+
+    /**
+     * @return 跟自身相关的供应商
+     */
+    public abstract PublicAccountSupplier getSupplier();
 }
