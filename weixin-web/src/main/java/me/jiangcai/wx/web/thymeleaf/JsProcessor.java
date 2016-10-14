@@ -35,17 +35,31 @@ import java.nio.charset.Charset;
 public class JsProcessor extends AbstractAttributeTagProcessor implements WeixinProcessor {
 
     private static final Log log = LogFactory.getLog(JsProcessor.class);
-
+    private static final String[] FixedAPI = new String[]{
+            "onMenuShareTimeline",
+            "onMenuShareAppMessage",
+            "onMenuShareQQ",
+            "onMenuShareWeibo",
+            "onMenuShareQZone",
+            "hideMenuItems"
+    };
     @Autowired
     private WeixinRequestHandlerMapping mapping;
-    @Autowired
-    private Environment environment;
 
 //    public JsProcessor() {
 //        super(TemplateMode.HTML, "wx",
 //                "js", true
 //                , "js", true
 //                , 100);
+//    }
+@Autowired
+private Environment environment;
+
+
+//    @Override
+//    protected void doProcess(ITemplateContext context, IProcessableElementTag tag
+//            , IElementTagStructureHandler structureHandler) {
+//        log.debug("start!");
 //    }
 
     public JsProcessor() {
@@ -55,24 +69,15 @@ public class JsProcessor extends AbstractAttributeTagProcessor implements Weixin
                 , 100, true);
     }
 
-
-//    @Override
-//    protected void doProcess(ITemplateContext context, IProcessableElementTag tag
-//            , IElementTagStructureHandler structureHandler) {
-//        log.debug("start!");
-//    }
-
-    private static final String[] FixedAPI = new String[]{
-            "onMenuShareTimeline",
-            "onMenuShareAppMessage",
-            "onMenuShareQQ",
-            "onMenuShareWeibo",
-            "onMenuShareQZone"
-    };
-
     @Override
     protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName
             , String attributeValue, IElementTagStructureHandler structureHandler) {
+
+        if (!WeixinDialect.Support(context)) {
+            structureHandler.removeElement();
+            return;
+        }
+
         PublicAccount publicAccount = mapping.currentPublicAccount();
         assert publicAccount != null;
 

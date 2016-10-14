@@ -5,6 +5,7 @@ import lombok.Data;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
+import org.springframework.util.StringUtils;
 import org.thymeleaf.context.ITemplateContext;
 import org.thymeleaf.engine.AttributeName;
 import org.thymeleaf.model.IProcessableElementTag;
@@ -22,11 +23,16 @@ import java.nio.charset.Charset;
 /**
  * 一个是一些基本信息,还有一个是回调
  * title,desc,link,imgUrl,success,cancel
+ * 也可以通过设置false或者no 隐藏掉所有分享菜单
  *
  * @author CJ
  */
 @Component
 public class ShareProcessor extends AbstractAttributeTagProcessor implements WeixinProcessor {
+
+    protected ShareProcessor() {
+        super(TemplateMode.HTML, "wx", null, true, "share", true, 100, true);
+    }
 
     private static String ExpressionString(ITemplateContext context, String input) {
         final IStandardExpressionParser expressionParser = StandardExpressions.getExpressionParser(context.getConfiguration());
@@ -71,28 +77,28 @@ public class ShareProcessor extends AbstractAttributeTagProcessor implements Wei
 
     }
 
-    @Data
-    @AllArgsConstructor
-    private static class WeixinShare {
-        private String title;
-        private String desc;
-        private String link;
-        private String imgUrl;
-        private String success;
-        private String cancel;
-    }
-
-    protected ShareProcessor() {
-        super(TemplateMode.HTML, "wx", null, true, "share", true, 100, true);
-    }
-
     @Override
     protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName
             , String attributeValue, IElementTagStructureHandler structureHandler) {
 
-        final WeixinShare weixinShare = parseWeixinShare(context, tag, attributeValue);
+        if (!WeixinDialect.Support(context)) {
+            structureHandler.removeElement();
+            return;
+        }
 
         try {
+
+            if (!StringUtils.isEmpty(attributeValue) && ("no".equalsIgnoreCase(attributeValue)
+                    || "false".equalsIgnoreCase(attributeValue)
+                    || "forbid".equalsIgnoreCase(attributeValue))) {
+                try (InputStream inputStream = new ClassPathResource("/weixin.no-share.js").getInputStream()) {
+                    structureHandler.setBody(StreamUtils.copyToString(inputStream, Charset.forName("UTF-8")), false);
+                }
+
+                return;
+            }
+
+            final WeixinShare weixinShare = parseWeixinShare(context, tag, attributeValue);
             try (InputStream inputStream = new ClassPathResource("/weixin.share.js").getInputStream()) {
                 String code = StreamUtils.copyToString(inputStream, Charset.forName("UTF-8"));
                 code = code.replaceAll("_TITLE_", weixinShare.title);
@@ -109,5 +115,16 @@ public class ShareProcessor extends AbstractAttributeTagProcessor implements Wei
         }
 
 
+    }
+
+    @Data
+    @AllArgsConstructor
+    private static class WeixinShare {
+        private String title;
+        private String desc;
+        private String link;
+        private String imgUrl;
+        private String success;
+        private String cancel;
     }
 }

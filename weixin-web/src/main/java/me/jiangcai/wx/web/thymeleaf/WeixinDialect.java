@@ -2,6 +2,8 @@ package me.jiangcai.wx.web.thymeleaf;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.context.IWebContext;
 import org.thymeleaf.dialect.IDialect;
 import org.thymeleaf.dialect.IProcessorDialect;
 import org.thymeleaf.processor.IProcessor;
@@ -24,6 +26,15 @@ public class WeixinDialect implements IDialect, IProcessorDialect {
         processors = new HashSet<>();
         processors.add(new StandardXmlNsTagProcessor(TemplateMode.HTML, getPrefix()));
         weixinProcessors.forEach(processors::add);
+    }
+
+    static boolean Support(ITemplateContext context) {
+        if (context instanceof IWebContext) {
+            IWebContext web = (IWebContext) context;
+            final String header = web.getRequest().getHeader("user-agent");
+            return header != null && header.contains("MicroMessenger");
+        }
+        return true;
     }
 
     @Override
