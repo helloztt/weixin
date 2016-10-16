@@ -19,7 +19,7 @@ import org.springframework.web.context.request.WebRequestInterceptor;
 public class WeixinInterceptor implements WebRequestInterceptor {
 
     public static final String WEIXIN_ENABLED_REQUEST_KEY = "me.jc.weixin.enabled";
-    public static final String WEIXIN_ENABLED_MODEL_KEY = "inWeixin";
+    //    public static final String WEIXIN_ENABLED_MODEL_KEY = "inWeixin";
     private static final Log log = LogFactory.getLog(WeixinInterceptor.class);
     @Autowired
     private PublicAccountSupplier publicAccountSupplier;
@@ -49,8 +49,8 @@ public class WeixinInterceptor implements WebRequestInterceptor {
 
     @Override
     public void postHandle(WebRequest request, ModelMap model) throws Exception {
-        if (model != null)
-            model.addAttribute(WEIXIN_ENABLED_MODEL_KEY, isMicroMessenger(request));
+//        if (model != null)
+//            model.addAttribute(WEIXIN_ENABLED_MODEL_KEY, isMicroMessenger(request));
     }
 
     @Override
