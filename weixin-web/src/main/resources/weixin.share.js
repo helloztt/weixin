@@ -91,4 +91,7 @@ wx.ready(function () {
                 success('qqZone', arguments);
         }
     });
+
+    // 显示所有
+    wx.showAllNonBaseMenuItem();
 });
