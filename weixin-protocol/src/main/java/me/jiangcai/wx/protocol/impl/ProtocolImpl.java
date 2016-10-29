@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import me.jiangcai.wx.TokenType;
 import me.jiangcai.wx.WeixinUserService;
 import me.jiangcai.wx.model.Menu;
+import me.jiangcai.wx.model.MyWeixinUserDetail;
 import me.jiangcai.wx.model.PublicAccount;
+import me.jiangcai.wx.model.SceneCode;
 import me.jiangcai.wx.model.Template;
 import me.jiangcai.wx.model.TemplateList;
 import me.jiangcai.wx.model.UserAccessResponse;
@@ -19,6 +21,7 @@ import me.jiangcai.wx.protocol.impl.handler.AccessTokenHandler;
 import me.jiangcai.wx.protocol.impl.handler.VoidHandler;
 import me.jiangcai.wx.protocol.impl.handler.WeixinResponseHandler;
 import me.jiangcai.wx.protocol.impl.response.AccessToken;
+import me.jiangcai.wx.protocol.impl.response.CreateQRCodeResponse;
 import me.jiangcai.wx.protocol.impl.response.JavascriptTicket;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -225,6 +228,48 @@ class ProtocolImpl implements Protocol {
             client.execute(postMenu, new VoidHandler());
         } catch (IOException ex) {
             throw new ClientException(ex);
+        }
+    }
+
+    @Override
+    public SceneCode createQRCode(int sceneId, Integer seconds) throws ProtocolException {
+        HttpPost create = newPost("/qrcode/create");
+
+        // 准备数据
+        HashMap<String, Object> toPost = new HashMap<>();
+        if (seconds != null) {
+            toPost.put("expire_seconds", seconds);
+            toPost.put("action_name", "QR_SCENE");
+        } else {
+            toPost.put("action_name", "QR_LIMIT_SCENE");
+        }
+        HashMap<String, Object> scene = new HashMap<>();
+        scene.put("scene_id", sceneId);
+        HashMap<String, Object> action = new HashMap<>();
+        action.put("scene", scene);
+        toPost.put("action_info", action);
+
+        try {
+            HttpEntity entity = EntityBuilder.create()
+                    .setContentType(ContentType.create("application/json", "UTF-8"))
+                    .setText(objectMapper.writeValueAsString(toPost))
+                    .build();
+
+            create.setEntity(entity);
+            return client.execute(create, new WeixinResponseHandler<>(CreateQRCodeResponse.class)).toCode();
+        } catch (IOException ex) {
+            throw new ClientException(ex);
+        }
+    }
+
+    @Override
+    public MyWeixinUserDetail userDetail(String openId) throws ProtocolException {
+        HttpGet get = newGet("/user/info", new BasicNameValuePair("openid", openId),
+                new BasicNameValuePair("lang", account.getLocale().toString()));
+        try {
+            return client.execute(get, new WeixinResponseHandler<>(MyWeixinUserDetail.class));
+        } catch (IOException e) {
+            throw new ClientException(e);
         }
     }
 

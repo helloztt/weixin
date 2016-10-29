@@ -4,6 +4,8 @@ import me.jiangcai.wx.PublicAccountSupplier;
 import me.jiangcai.wx.SingleAccountSpringConfig;
 import me.jiangcai.wx.model.Menu;
 import me.jiangcai.wx.model.MenuType;
+import me.jiangcai.wx.model.MyWeixinUserDetail;
+import me.jiangcai.wx.model.SceneCode;
 import me.jiangcai.wx.model.WeixinUserDetail;
 import me.jiangcai.wx.protocol.impl.handler.WeixinResponseHandler;
 import org.apache.http.client.methods.HttpGet;
@@ -33,7 +35,7 @@ public class ProtocolTest {
     private Random random = new Random();
 
     @Before
-    public void init(){
+    public void init() {
 //        protocol = Protocol.forAccount(new me.jiangcai.wx.DebugPublicAccount());
         protocol = Protocol.forAccount(supplier.findByHost(null));
     }
@@ -47,6 +49,15 @@ public class ProtocolTest {
             WeixinUserDetail detail = client.execute(test, new WeixinResponseHandler<>(WeixinUserDetail.class));
             System.out.println(detail);
         }
+    }
+
+    @Test
+    public void qrCode() {
+        SceneCode code = protocol.createQRCode(1, 60);
+        System.out.println(code);
+
+        MyWeixinUserDetail detail = protocol.userDetail("oiKvNt7Z-pzBTkhDZTCc5DU4ilHs");
+        System.out.println(detail);
     }
 
     @Test
@@ -69,17 +80,17 @@ public class ProtocolTest {
     private Menu randomMenu(boolean allowSub) {
         Menu menu = new Menu();
         menu.setName(UUID.randomUUID().toString().substring(0, 4) + "中");
-        if (random.nextBoolean() && allowSub){
-            int size = random.nextInt(5)+1;
+        if (random.nextBoolean() && allowSub) {
+            int size = random.nextInt(5) + 1;
             Menu[] subs = new Menu[size];
             for (int i = 0; i < size; i++) {
                 subs[i] = randomMenu(false);
             }
             menu.setSubs(subs);
-        }else{
-            menu.setType(MenuType.values()[1+random.nextInt(MenuType.values().length-1)]);
+        } else {
+            menu.setType(MenuType.values()[1 + random.nextInt(MenuType.values().length - 1)]);
             while (menu.getType().getDataName().equalsIgnoreCase("media_id"))
-                menu.setType(MenuType.values()[1+random.nextInt(MenuType.values().length-1)]);
+                menu.setType(MenuType.values()[1 + random.nextInt(MenuType.values().length - 1)]);
             //  media_id 这个比较麻烦!
             menu.setData("http://www.baidu.com");
         }

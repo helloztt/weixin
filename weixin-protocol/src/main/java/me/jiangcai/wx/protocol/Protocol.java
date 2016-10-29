@@ -2,7 +2,9 @@ package me.jiangcai.wx.protocol;
 
 import me.jiangcai.wx.WeixinUserService;
 import me.jiangcai.wx.model.Menu;
+import me.jiangcai.wx.model.MyWeixinUserDetail;
 import me.jiangcai.wx.model.PublicAccount;
+import me.jiangcai.wx.model.SceneCode;
 import me.jiangcai.wx.model.Template;
 import me.jiangcai.wx.model.UserAccessResponse;
 import me.jiangcai.wx.model.WeixinUserDetail;
@@ -102,4 +104,22 @@ public interface Protocol {
      * @param parameters 参数,参数可不需要什么.DATA
      */
     void sendTemplate(String openId, String templateId, String url, TemplateParameter... parameters) throws ProtocolException;
+
+    /**
+     * 创建场景二维码
+     *
+     * @param sceneId 场景id 临时二维码时为32位非0整型，永久二维码时最大值为100000
+     * @param seconds 最大不超过2592000（即30天），此字段如果不填，则创建的是永久二维码
+     * @return 二维码下载地址
+     */
+    SceneCode createQRCode(int sceneId, Integer seconds) throws ProtocolException;
+
+    /**
+     * 跟{@link #userDetail(String, WeixinUserService, Object)}很不相同,它只可以获取已关注本公众号的详情
+     *
+     * @param openId 用户的openId
+     * @return 详情
+     * @throws ProtocolException
+     */
+    MyWeixinUserDetail userDetail(String openId) throws ProtocolException;
 }
