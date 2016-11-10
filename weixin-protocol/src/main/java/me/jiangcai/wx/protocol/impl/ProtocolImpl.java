@@ -12,6 +12,8 @@ import me.jiangcai.wx.model.TemplateList;
 import me.jiangcai.wx.model.UserAccessResponse;
 import me.jiangcai.wx.model.WeixinUser;
 import me.jiangcai.wx.model.WeixinUserDetail;
+import me.jiangcai.wx.model.message.TemplateMessageStyle;
+import me.jiangcai.wx.model.message.TemplateParameterAdjust;
 import me.jiangcai.wx.protocol.Protocol;
 import me.jiangcai.wx.protocol.TemplateParameter;
 import me.jiangcai.wx.protocol.exception.BadAuthAccessException;
@@ -21,6 +23,7 @@ import me.jiangcai.wx.protocol.impl.handler.AccessTokenHandler;
 import me.jiangcai.wx.protocol.impl.handler.VoidHandler;
 import me.jiangcai.wx.protocol.impl.handler.WeixinResponseHandler;
 import me.jiangcai.wx.protocol.impl.response.AccessToken;
+import me.jiangcai.wx.protocol.impl.response.AddTemplate;
 import me.jiangcai.wx.protocol.impl.response.CreateQRCodeResponse;
 import me.jiangcai.wx.protocol.impl.response.JavascriptTicket;
 import org.apache.commons.logging.Log;
@@ -36,13 +39,16 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.springframework.security.crypto.codec.Hex;
 
+import java.awt.*;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -213,7 +219,12 @@ class ProtocolImpl implements Protocol {
                 .forEach(templateParameter -> {
                     HashMap<String, String> map = new HashMap<>();
                     map.put("value", templateParameter.getValue());
-                    map.put("color", "#173177");
+                    Color color = templateParameter.getColor();
+                    if (color == null)
+                        map.put("color", "#173177");
+                    else {
+                        map.put("color", String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue()));
+                    }
                     data.put(templateParameter.getName(), map);
                 });
 
@@ -229,6 +240,64 @@ class ProtocolImpl implements Protocol {
         } catch (IOException ex) {
             throw new ClientException(ex);
         }
+    }
+
+    @Override
+    public void sendTemplate(String openId, TemplateMessageStyle style, String url, TemplateParameterAdjust adjust
+            , Object... arguments) throws ProtocolException {
+        //寻找具体的模板
+        if (style.getTemplateId() == null) {
+            Template templateMessage = findTemplate(template -> {
+                return template.getTitle().equals(style.getTemplateTitle());
+            }).orElse(null);
+
+            if (templateMessage == null) {
+                // 添加
+                HttpPost addTemplate = newPost("/template/api_add_template");
+                HashMap<String, Object> toPost = new HashMap<>();
+                toPost.put("template_id_short", style.getTemplateIdShort());
+                try {
+                    HttpEntity entity = EntityBuilder.create()
+                            .setContentType(ContentType.create("application/json", "UTF-8"))
+                            .setText(objectMapper.writeValueAsString(toPost))
+                            .build();
+
+                    addTemplate.setEntity(entity);
+                    style.setTemplateId(client.execute(addTemplate, new WeixinResponseHandler<>(AddTemplate.class)).getTemplateId());
+                } catch (IOException ex) {
+                    throw new ClientException(ex);
+                }
+            } else {
+                style.setTemplateId(templateMessage.getId());
+            }
+        }
+
+        // 准备消息
+        List<TemplateParameter> templateParameterList = new ArrayList<>();
+
+        style.parameterStyles().forEach(templateMessageParameter -> {
+            templateParameterList.add(new TemplateParameter() {
+                @Override
+                public Color getColor() {
+                    if (adjust == null)
+                        return templateMessageParameter.getDefaultColor();
+                    return adjust.color(templateMessageParameter, arguments);
+                }
+
+                @Override
+                public String getName() {
+                    return templateMessageParameter.getName();
+                }
+
+                @Override
+                public String getValue() {
+                    return templateMessageParameter.getFormat().format(arguments);
+                }
+            });
+        });
+
+        sendTemplate(openId, style.getTemplateId(), url
+                , templateParameterList.toArray(new TemplateParameter[templateParameterList.size()]));
     }
 
     @Override

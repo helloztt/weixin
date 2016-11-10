@@ -8,6 +8,8 @@ import me.jiangcai.wx.model.SceneCode;
 import me.jiangcai.wx.model.Template;
 import me.jiangcai.wx.model.UserAccessResponse;
 import me.jiangcai.wx.model.WeixinUserDetail;
+import me.jiangcai.wx.model.message.TemplateMessageStyle;
+import me.jiangcai.wx.model.message.TemplateParameterAdjust;
 import me.jiangcai.wx.protocol.exception.ProtocolException;
 import me.jiangcai.wx.protocol.impl.ProtocolCallback;
 import org.springframework.cglib.proxy.Enhancer;
@@ -104,6 +106,18 @@ public interface Protocol {
      * @param parameters 参数,参数可不需要什么.DATA
      */
     void sendTemplate(String openId, String templateId, String url, TemplateParameter... parameters) throws ProtocolException;
+
+    /**
+     * 发送一个确定业务的模板消息
+     *
+     * @param openId    收件人的openId;只有关注了公众号的才可以接受到模板消息
+     * @param style     模板消息的风格
+     * @param adjust    可选的消息校准器
+     * @param arguments 消息参数
+     * @throws ProtocolException
+     */
+    void sendTemplate(String openId, TemplateMessageStyle style, String url, TemplateParameterAdjust adjust, Object... arguments)
+            throws ProtocolException;
 
     /**
      * 创建场景二维码
