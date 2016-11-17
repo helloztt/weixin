@@ -102,7 +102,7 @@ public interface Protocol {
      *
      * @param openId     收件人的openId;只有关注了公众号的才可以接受到模板消息
      * @param templateId 模板id
-     * @param url        这个消息相关的url
+     * @param url        这个消息相关的url,可以为null
      * @param parameters 参数,参数可不需要什么.DATA
      */
     void sendTemplate(String openId, String templateId, String url, TemplateParameter... parameters) throws ProtocolException;
@@ -112,6 +112,7 @@ public interface Protocol {
      *
      * @param openId    收件人的openId;只有关注了公众号的才可以接受到模板消息
      * @param style     模板消息的风格
+     * @param url       这个消息相关的url,可以为null
      * @param adjust    可选的消息校准器
      * @param arguments 消息参数
      * @throws ProtocolException
