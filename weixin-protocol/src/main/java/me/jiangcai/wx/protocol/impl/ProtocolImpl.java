@@ -12,6 +12,7 @@ import me.jiangcai.wx.model.TemplateList;
 import me.jiangcai.wx.model.UserAccessResponse;
 import me.jiangcai.wx.model.WeixinUser;
 import me.jiangcai.wx.model.WeixinUserDetail;
+import me.jiangcai.wx.model.message.TemplateMessageLocate;
 import me.jiangcai.wx.model.message.TemplateMessageStyle;
 import me.jiangcai.wx.model.message.TemplateParameterAdjust;
 import me.jiangcai.wx.protocol.Protocol;
@@ -246,31 +247,7 @@ class ProtocolImpl implements Protocol {
     public void sendTemplate(String openId, TemplateMessageStyle style, String url, TemplateParameterAdjust adjust
             , Object... arguments) throws ProtocolException {
         //寻找具体的模板
-        if (style.getTemplateId() == null) {
-            Template templateMessage = findTemplate(template -> {
-                return template.getTitle().equals(style.getTemplateTitle());
-            }).orElse(null);
-
-            if (templateMessage == null) {
-                // 添加
-                HttpPost addTemplate = newPost("/template/api_add_template");
-                HashMap<String, Object> toPost = new HashMap<>();
-                toPost.put("template_id_short", style.getTemplateIdShort());
-                try {
-                    HttpEntity entity = EntityBuilder.create()
-                            .setContentType(ContentType.create("application/json", "UTF-8"))
-                            .setText(objectMapper.writeValueAsString(toPost))
-                            .build();
-
-                    addTemplate.setEntity(entity);
-                    style.setTemplateId(client.execute(addTemplate, new WeixinResponseHandler<>(AddTemplate.class)).getTemplateId());
-                } catch (IOException ex) {
-                    throw new ClientException(ex);
-                }
-            } else {
-                style.setTemplateId(templateMessage.getId());
-            }
-        }
+        getTemplate(style);
 
         // 准备消息
         List<TemplateParameter> templateParameterList = new ArrayList<>();
@@ -340,6 +317,37 @@ class ProtocolImpl implements Protocol {
         } catch (IOException e) {
             throw new ClientException(e);
         }
+    }
+
+    @Override
+    public Template getTemplate(TemplateMessageLocate style) throws ProtocolException {
+        if (style.getTemplateId() == null) {
+            Template templateMessage = findTemplate(template -> {
+                return template.getTitle().equals(style.getTemplateTitle());
+            }).orElse(null);
+
+            if (templateMessage == null) {
+                // 添加
+                HttpPost addTemplate = newPost("/template/api_add_template");
+                HashMap<String, Object> toPost = new HashMap<>();
+                toPost.put("template_id_short", style.getTemplateIdShort());
+                try {
+                    HttpEntity entity = EntityBuilder.create()
+                            .setContentType(ContentType.create("application/json", "UTF-8"))
+                            .setText(objectMapper.writeValueAsString(toPost))
+                            .build();
+
+                    addTemplate.setEntity(entity);
+                    style.setTemplateId(client.execute(addTemplate, new WeixinResponseHandler<>(AddTemplate.class)).getTemplateId());
+                } catch (IOException ex) {
+                    throw new ClientException(ex);
+                }
+            } else {
+                style.setTemplateId(templateMessage.getId());
+            }
+        }
+        return findTemplate(template -> template.getId().equals(style.getTemplateId()))
+                .orElseThrow(ProtocolException::new);
     }
 
 

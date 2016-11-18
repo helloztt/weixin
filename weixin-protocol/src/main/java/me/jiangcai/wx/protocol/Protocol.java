@@ -8,6 +8,7 @@ import me.jiangcai.wx.model.SceneCode;
 import me.jiangcai.wx.model.Template;
 import me.jiangcai.wx.model.UserAccessResponse;
 import me.jiangcai.wx.model.WeixinUserDetail;
+import me.jiangcai.wx.model.message.TemplateMessageLocate;
 import me.jiangcai.wx.model.message.TemplateMessageStyle;
 import me.jiangcai.wx.model.message.TemplateParameterAdjust;
 import me.jiangcai.wx.protocol.exception.ProtocolException;
@@ -137,4 +138,13 @@ public interface Protocol {
      * @throws ProtocolException
      */
     MyWeixinUserDetail userDetail(String openId) throws ProtocolException;
+
+    /**
+     * 获取模板
+     *
+     * @param templateMessageLocate 定位
+     * @return 消息模板
+     * @throws ProtocolException
+     */
+    Template getTemplate(TemplateMessageLocate templateMessageLocate) throws ProtocolException;
 }

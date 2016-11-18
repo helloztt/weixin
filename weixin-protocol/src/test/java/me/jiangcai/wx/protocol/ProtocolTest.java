@@ -6,8 +6,10 @@ import me.jiangcai.wx.model.Menu;
 import me.jiangcai.wx.model.MenuType;
 import me.jiangcai.wx.model.MyWeixinUserDetail;
 import me.jiangcai.wx.model.SceneCode;
+import me.jiangcai.wx.model.Template;
 import me.jiangcai.wx.model.WeixinUserDetail;
 import me.jiangcai.wx.model.message.SimpleTemplateMessageParameter;
+import me.jiangcai.wx.model.message.TemplateMessageLocate;
 import me.jiangcai.wx.model.message.TemplateMessageParameter;
 import me.jiangcai.wx.model.message.TemplateMessageStyle;
 import me.jiangcai.wx.model.message.TemplateParameterAdjust;
@@ -28,6 +30,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Random;
 import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author CJ
@@ -78,6 +82,37 @@ public class ProtocolTest {
         messageParameter2.setName("p2");
         messageParameter2.setPattern("哈哈{1}哈哈");
 
+        Template template = protocol.getTemplate(new TemplateMessageLocate() {
+            @Override
+            public String getTemplateIdShort() {
+                return null;
+            }
+
+            @Override
+            public String getTemplateTitle() {
+                return null;
+            }
+
+            @Override
+            public String getIndustryId() {
+                return null;
+            }
+
+            @Override
+            public String getTemplateId() {
+                return "YoWOhKTShg9oCJmWT_41A45OgmcdstHHlZiPdFiSOGI";
+            }
+
+            @Override
+            public void setTemplateId(String templateId) {
+
+            }
+        });
+
+        System.out.println(template);
+        assertThat(template.parameters())
+                .contains("p1", "p2");
+
         protocol.sendTemplate("oiKvNt0neOAB8ddS0OzM_7QXQDZw", new TemplateMessageStyle() {
             @Override
             public String getTemplateIdShort() {
@@ -114,6 +149,38 @@ public class ProtocolTest {
                 return random.nextBoolean() ? Color.magenta : Color.cyan;
             }
         }, "Foo", "Bar");
+
+//        protocol.sendTemplate("oiKvNt0neOAB8ddS0OzM_7QXQDZw", new TemplateMessageStyle() {
+//            @Override
+//            public String getTemplateIdShort() {
+//                return "abcdefg";
+//            }
+//
+//            @Override
+//            public String getTemplateTitle() {
+//                return null;
+//            }
+//
+//            @Override
+//            public String getIndustryId() {
+//                return null;
+//            }
+//
+//            @Override
+//            public String getTemplateId() {
+//                return null;
+//            }
+//
+//            @Override
+//            public void setTemplateId(String templateId) {
+//
+//            }
+//
+//            @Override
+//            public Collection<TemplateMessageParameter> parameterStyles() {
+//                return null;
+//            }
+//        }, null, null, "a");
 
     }
 
