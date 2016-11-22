@@ -20,6 +20,14 @@ public class SimpleTemplateMessageParameter implements TemplateMessageParameter 
 
     private String pattern;
 
+    public SimpleTemplateMessageParameter() {
+    }
+
+    public SimpleTemplateMessageParameter(String name, String pattern) {
+        this.name = name;
+        this.pattern = pattern;
+    }
+
     @Override
     public String getName() {
         return name;

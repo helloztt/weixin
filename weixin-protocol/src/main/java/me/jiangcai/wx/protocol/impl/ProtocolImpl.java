@@ -347,7 +347,10 @@ class ProtocolImpl implements Protocol {
             }
         }
         return findTemplate(template -> template.getId().equals(style.getTemplateId()))
-                .orElseThrow(ProtocolException::new);
+                .orElseGet(() -> {
+                    style.setTemplateId(null);
+                    return getTemplate(style);
+                });
     }
 
 

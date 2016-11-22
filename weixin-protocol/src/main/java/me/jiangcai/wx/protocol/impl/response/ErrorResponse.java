@@ -2,18 +2,16 @@ package me.jiangcai.wx.protocol.impl.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author CJ
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class ErrorResponse {
+public class ErrorResponse extends BaseResponse {
     @JsonProperty("openid")
     private String openId;
-    @JsonProperty("errcode")
-    private int code;
-    @JsonProperty("errmsg")
-    private String message;
     @JsonProperty("msgid")
     private String messageId;
 }

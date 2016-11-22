@@ -18,6 +18,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +70,57 @@ public class ProtocolTest {
 
         MyWeixinUserDetail detail = protocol.userDetail("oiKvNt7Z-pzBTkhDZTCc5DU4ilHs");
         System.out.println(detail);
+    }
+
+    /**
+     * 实际公众号的模板
+     */
+    @Test
+    @Ignore
+    public void realTemplate() {
+        // 款爷二手
+        protocol.sendTemplate("oPFwRxCG65Tn2xw_FaK2IXV21uBc"
+                , new TemplateMessageStyle() {
+                    String templateId = "lHGV3WXyfgp-xq467eaaQ4OhrSLgeI9BkdAGztqUYJg";
+
+                    @Override
+                    public Collection<? extends TemplateMessageParameter> parameterStyles() {
+                        return Arrays.asList(
+                                new SimpleTemplateMessageParameter("first", "您好，我们已收到您的订单，将尽快发货")
+                                , new SimpleTemplateMessageParameter("order", "IIIIDDDD")
+                                , new SimpleTemplateMessageParameter("productName", "吴迪")
+                                , new SimpleTemplateMessageParameter("time", "今年今日")
+                                , new SimpleTemplateMessageParameter("result", "成功")
+                                , new SimpleTemplateMessageParameter("remark", "更多商品请访问网上商城，好品牌，有分期，欢迎下次光临！")
+                        );
+                    }
+
+                    @Override
+                    public String getTemplateIdShort() {
+                        return "TM00253";
+                    }
+
+                    @Override
+                    public String getTemplateTitle() {
+                        return "订购成功通知";
+                    }
+
+                    @Override
+                    public String getIndustryId() {
+                        return null;
+                    }
+
+                    @Override
+                    public String getTemplateId() {
+                        return templateId;
+                    }
+
+                    @Override
+                    public void setTemplateId(String templateId) {
+                        System.err.println("!!!!!!! -> " + templateId);
+                        this.templateId = templateId;
+                    }
+                }, null, null, "1");
     }
 
     @Test

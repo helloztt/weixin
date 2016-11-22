@@ -2,17 +2,14 @@ package me.jiangcai.wx.protocol.impl.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author CJ
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class JavascriptTicket {
-
-    @JsonProperty("errcode")
-    private int code;
-    @JsonProperty("errmsg")
-    private String message;
+public class JavascriptTicket extends BaseResponse {
 
     @JsonProperty("ticket")
     private String token;
