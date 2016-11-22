@@ -9,7 +9,7 @@ import java.util.Collection;
  */
 public interface TemplateMessageStyle extends TemplateMessageLocate {
 
-    Collection<TemplateMessageParameter> parameterStyles();
+    Collection<? extends TemplateMessageParameter> parameterStyles();
     // 格式是这边固定的
     // 颜色也提供了默认的
     // 此处的格式也是一个模板

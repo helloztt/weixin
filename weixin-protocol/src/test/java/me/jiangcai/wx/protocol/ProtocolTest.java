@@ -140,7 +140,7 @@ public class ProtocolTest {
             }
 
             @Override
-            public Collection<TemplateMessageParameter> parameterStyles() {
+            public Collection<? extends TemplateMessageParameter> parameterStyles() {
                 return Arrays.asList(messageParameter1, messageParameter2);
             }
         }, "http://www.baidu.com", new TemplateParameterAdjust() {
