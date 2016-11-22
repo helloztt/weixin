@@ -28,7 +28,7 @@ public class SinglePublicAccountSupplier implements PublicAccountSupplier {
     }
 
     @Override
-    public List<PublicAccount> getAccounts() {
+    public List<? extends PublicAccount> getAccounts() {
         return Collections.singletonList(publicAccount);
     }
 

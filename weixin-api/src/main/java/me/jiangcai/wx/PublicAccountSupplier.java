@@ -16,7 +16,7 @@ public interface PublicAccountSupplier {
     /**
      * @return 所有支持的公众号
      */
-    List<PublicAccount> getAccounts();
+    List<? extends PublicAccount> getAccounts();
 
     /**
      * 此处并没有定义识别符具体是什么,由开发者在客户系统中厘定,原则是
