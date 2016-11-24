@@ -3,6 +3,7 @@ package me.jiangcai.wx.protocol.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.jiangcai.wx.TokenType;
 import me.jiangcai.wx.WeixinUserService;
+import me.jiangcai.wx.message.Message;
 import me.jiangcai.wx.model.Menu;
 import me.jiangcai.wx.model.MyWeixinUserDetail;
 import me.jiangcai.wx.model.PublicAccount;
@@ -50,6 +51,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -351,6 +353,26 @@ class ProtocolImpl implements Protocol {
                     style.setTemplateId(null);
                     return getTemplate(style);
                 });
+    }
+
+    @Override
+    public void send(Message message) throws ProtocolException {
+        // http://mp.weixin.qq.com/wiki/11/c88c270ae8935291626538f9c64bd123.html#.E5.AE.A2.E6.9C.8D.E6.8E.A5.E5.8F.A3-.E5.8F.91.E6.B6.88.E6.81.AF
+        HttpPost send = newPost("/message/custom/send");
+
+        Map<String, Object> toPost = new HashMap<>();
+        toPost.put("touser", message.getTo());
+        message.sendTo(toPost);
+        try {
+            HttpEntity entity = EntityBuilder.create()
+                    .setContentType(ContentType.create("application/json", "UTF-8"))
+                    .setText(objectMapper.writeValueAsString(toPost))
+                    .build();
+            send.setEntity(entity);
+            client.execute(send);
+        } catch (IOException ex) {
+            throw new ClientException(ex);
+        }
     }
 
 

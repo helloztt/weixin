@@ -2,6 +2,7 @@ package me.jiangcai.wx.protocol;
 
 import me.jiangcai.wx.PublicAccountSupplier;
 import me.jiangcai.wx.SingleAccountSpringConfig;
+import me.jiangcai.wx.message.TextMessage;
 import me.jiangcai.wx.model.Menu;
 import me.jiangcai.wx.model.MenuType;
 import me.jiangcai.wx.model.MyWeixinUserDetail;
@@ -70,6 +71,14 @@ public class ProtocolTest {
 
         MyWeixinUserDetail detail = protocol.userDetail("oiKvNt7Z-pzBTkhDZTCc5DU4ilHs");
         System.out.println(detail);
+    }
+
+    @Test
+    public void send() {
+        TextMessage textMessage = new TextMessage();
+        textMessage.setContent(UUID.randomUUID().toString() + "中文");
+        textMessage.setTo("oPFwRxCG65Tn2xw_FaK2IXV21uBc");
+        protocol.send(textMessage);
     }
 
     /**

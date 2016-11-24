@@ -15,6 +15,7 @@ import me.jiangcai.wx.converter.LocalDateTimeSerializer;
 import me.jiangcai.wx.model.PublicAccount;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 /**
  * @author CJ
@@ -52,4 +53,12 @@ public abstract class Message {
     }
 
 
+    /**
+     * 这条消息将作为客服消息发送,将字段填入这个Map中
+     *
+     * @param data 目标Map
+     */
+    public void sendTo(Map<String, Object> data) {
+
+    }
 }

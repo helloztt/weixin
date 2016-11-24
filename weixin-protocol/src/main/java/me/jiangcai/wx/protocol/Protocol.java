@@ -1,6 +1,7 @@
 package me.jiangcai.wx.protocol;
 
 import me.jiangcai.wx.WeixinUserService;
+import me.jiangcai.wx.message.Message;
 import me.jiangcai.wx.model.Menu;
 import me.jiangcai.wx.model.MyWeixinUserDetail;
 import me.jiangcai.wx.model.PublicAccount;
@@ -157,4 +158,12 @@ public interface Protocol {
      * @throws ProtocolException
      */
     Template getTemplate(TemplateMessageLocate templateMessageLocate) throws ProtocolException;
+
+    /**
+     * 发送客服消息
+     *
+     * @param message 消息
+     * @throws ProtocolException
+     */
+    void send(Message message) throws ProtocolException;
 }
