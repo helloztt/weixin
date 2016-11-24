@@ -13,8 +13,11 @@ import me.jiangcai.wx.model.message.TemplateMessageStyle;
 import me.jiangcai.wx.model.message.TemplateParameterAdjust;
 import me.jiangcai.wx.protocol.exception.ProtocolException;
 import me.jiangcai.wx.protocol.impl.ProtocolCallback;
+import me.jiangcai.wx.protocol.virtual.Action;
 import org.springframework.cglib.proxy.Enhancer;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -22,6 +25,13 @@ import java.util.function.Predicate;
  * @author CJ
  */
 public interface Protocol {
+
+    /**
+     * 在开发周期,开发者会需要检查业务的返回结果,但却不依赖具体微信发送的情况
+     * 只有在{@link PublicAccount#getAppID()}跟这个值相同时才会工作。并且把操作结果保留在{@link #virtualActions}中
+     */
+    String VirtualAppID = "me.jiangcai.virtual.weixin";
+    List<Action> virtualActions = new LinkedList<>();
 
     static Protocol forAccount(PublicAccount account) {
         // AOP 一下 呵呵

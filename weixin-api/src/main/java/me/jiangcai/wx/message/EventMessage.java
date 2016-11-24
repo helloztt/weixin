@@ -27,6 +27,17 @@ public class EventMessage extends Message {
     @JsonProperty("Ticket")
     private String ticket;
 
+    // 分享地理信息
+    @JsonProperty("Latitude")
+    private double latitude;
+    @JsonProperty("Longitude")
+    private double longitude;
+    @JsonProperty("Precision")
+    private double precision;
+//    <Latitude>23.137466</Latitude>
+//    <Longitude>113.352425</Longitude>
+//    <Precision>119.385040</Precision>
+
     public EventMessage() {
         super(MessageType.event);
     }
