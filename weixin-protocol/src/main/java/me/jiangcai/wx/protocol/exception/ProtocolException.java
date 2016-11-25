@@ -22,8 +22,8 @@ public class ProtocolException extends RuntimeException {
         super();
     }
 
-    public ProtocolException(int code,String message) {
-        super(message);
+    public ProtocolException(int code, String message) {
+        super("" + code + ":" + message);
     }
 
     public ProtocolException(String message) {

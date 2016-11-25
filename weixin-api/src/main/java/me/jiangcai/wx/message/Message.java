@@ -9,12 +9,14 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.ToString;
 import me.jiangcai.wx.converter.LocalDateTimeDeserializer;
 import me.jiangcai.wx.converter.LocalDateTimeSerializer;
 import me.jiangcai.wx.model.PublicAccount;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -25,7 +27,7 @@ import java.util.Map;
 @EqualsAndHashCode
 @ToString
 @JacksonXmlRootElement(localName = "xml")
-public abstract class Message {
+public abstract class Message implements Cloneable {
 
     @JacksonXmlCData
     @JsonProperty("MsgType")
@@ -55,10 +57,26 @@ public abstract class Message {
 
     /**
      * 这条消息将作为客服消息发送,将字段填入这个Map中
-     *
-     * @param data 目标Map
      */
-    public void sendTo(Map<String, Object> data) {
+    public Map<String, Object> sendTo() {
+        Map<String, Object> toPost = new HashMap<>();
+        toPost.put("touser", getTo());
+        toPost.put("msgtype", type.name());
+        putMessageContent(toPost);
+        return toPost;
+    }
 
+    protected abstract void putMessageContent(Map<String, Object> data);
+
+    /**
+     * @param message
+     * @return true 当前消息内容和参数一致
+     */
+    public abstract boolean sameContent(Message message);
+
+    @Override
+    @SneakyThrows(CloneNotSupportedException.class)
+    public Message clone() {
+        return (Message) super.clone();
     }
 }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import me.jiangcai.wx.protocol.exception.BadAccessException;
 import me.jiangcai.wx.protocol.exception.BadAuthAccessException;
 import me.jiangcai.wx.protocol.exception.ProtocolException;
+import me.jiangcai.wx.protocol.impl.response.BaseResponse;
 import me.jiangcai.wx.protocol.impl.response.ErrorResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,28 +51,38 @@ public class WeixinResponseHandler<T> extends AbstractResponseHandler<T> {
         }
 
         try {
-            return objectMapper.readValue(buffer.toByteArray(), clazz);
+            T result = objectMapper.readValue(buffer.toByteArray(), clazz);
+            if (result instanceof BaseResponse) {
+                if (((BaseResponse) result).getCode() != 0) {
+                    return throwException(buffer);
+                }
+            }
+            return result;
         } catch (UnrecognizedPropertyException exception) {
             log.debug("[WEIXIN] unexpected:", exception);
             // 那应该是失败了哦
-            ErrorResponse response = objectMapper.readValue(buffer.toByteArray(), ErrorResponse.class);
-
-            if (response.getCode() == 0)
-                return null;
-
-            log.debug("[WEIXIN] unexpected ErrorResponse:" + response);
-
-            // http://mp.weixin.qq.com/wiki/10/6380dc743053a91c544ffd2b7c959166.html
-            if (response.getCode() == 40001 || response.getCode() == 40002)
-                throw new BadAccessException();
-            //        40029	不合法的oauth_code
-            //        40030	不合法的refresh_token
-            if (response.getCode() == 40029 || response.getCode() == 40030)
-                throw new BadAuthAccessException();
-
-
-            // 分析下错误 现在暴力点 直接。。
-            throw new ProtocolException(response.getCode(), response.getMessage());
+            return throwException(buffer);
         }
+    }
+
+    private T throwException(ByteArrayOutputStream buffer) throws IOException {
+        ErrorResponse response = objectMapper.readValue(buffer.toByteArray(), ErrorResponse.class);
+
+        if (response.getCode() == 0)
+            return null;
+
+        log.debug("[WEIXIN] unexpected ErrorResponse:" + response);
+
+        // http://mp.weixin.qq.com/wiki/10/6380dc743053a91c544ffd2b7c959166.html
+        if (response.getCode() == 40001 || response.getCode() == 40002)
+            throw new BadAccessException();
+        //        40029	不合法的oauth_code
+        //        40030	不合法的refresh_token
+        if (response.getCode() == 40029 || response.getCode() == 40030)
+            throw new BadAuthAccessException();
+
+
+        // 分析下错误 现在暴力点 直接。。
+        throw new ProtocolException(response.getCode(), response.getMessage());
     }
 }

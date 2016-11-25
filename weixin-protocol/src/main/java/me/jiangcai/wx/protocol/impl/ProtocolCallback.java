@@ -6,6 +6,7 @@ import me.jiangcai.wx.protocol.exception.BadAccessException;
 import me.jiangcai.wx.protocol.virtual.Action;
 import org.springframework.cglib.proxy.InvocationHandler;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 
@@ -42,6 +43,8 @@ public class ProtocolCallback implements InvocationHandler {
             } catch (BadAccessException ex) {
                 protocol.newAccessToken();
                 return method.invoke(protocol, objects);
+            } catch (InvocationTargetException exception) {
+                throw exception.getTargetException();
             }
 
         } catch (NoSuchMethodException ex) {

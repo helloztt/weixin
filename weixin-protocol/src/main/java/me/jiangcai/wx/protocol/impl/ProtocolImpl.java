@@ -231,18 +231,7 @@ class ProtocolImpl implements Protocol {
                     data.put(templateParameter.getName(), map);
                 });
 
-
-        try {
-            HttpEntity entity = EntityBuilder.create()
-                    .setContentType(ContentType.create("application/json", "UTF-8"))
-                    .setText(objectMapper.writeValueAsString(toPost))
-                    .build();
-
-            postMenu.setEntity(entity);
-            client.execute(postMenu, new VoidHandler());
-        } catch (IOException ex) {
-            throw new ClientException(ex);
-        }
+        executeMethodWithJSONAndVoid(postMenu, toPost);
     }
 
     @Override
@@ -360,16 +349,18 @@ class ProtocolImpl implements Protocol {
         // http://mp.weixin.qq.com/wiki/11/c88c270ae8935291626538f9c64bd123.html#.E5.AE.A2.E6.9C.8D.E6.8E.A5.E5.8F.A3-.E5.8F.91.E6.B6.88.E6.81.AF
         HttpPost send = newPost("/message/custom/send");
 
-        Map<String, Object> toPost = new HashMap<>();
-        toPost.put("touser", message.getTo());
-        message.sendTo(toPost);
+        Map<String, Object> toPost = message.sendTo();
+        executeMethodWithJSONAndVoid(send, toPost);
+    }
+
+    private void executeMethodWithJSONAndVoid(HttpPost send, Map<String, Object> toPost) {
         try {
             HttpEntity entity = EntityBuilder.create()
                     .setContentType(ContentType.create("application/json", "UTF-8"))
                     .setText(objectMapper.writeValueAsString(toPost))
                     .build();
             send.setEntity(entity);
-            client.execute(send);
+            client.execute(send, new VoidHandler());
         } catch (IOException ex) {
             throw new ClientException(ex);
         }

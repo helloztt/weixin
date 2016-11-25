@@ -7,6 +7,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
 /**
  * @author CJ
  */
@@ -27,5 +31,21 @@ public class TextMessage extends Message {
 
     public TextMessage() {
         super(MessageType.text);
+    }
+
+    @Override
+    protected void putMessageContent(Map<String, Object> data) {
+        Map<String, Object> text = new HashMap<>();
+        text.put("content", content);
+        data.put("text", text);
+    }
+
+    @Override
+    public boolean sameContent(Message message) {
+        if (!(message instanceof TextMessage)) {
+            return false;
+        }
+        TextMessage eventMessage = (TextMessage) message;
+        return Objects.equals(content, eventMessage.content);
     }
 }

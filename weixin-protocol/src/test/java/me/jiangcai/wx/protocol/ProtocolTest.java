@@ -75,9 +75,11 @@ public class ProtocolTest {
 
     @Test
     public void send() {
+        Object obj = protocol.userDetail("oiKvNt0neOAB8ddS0OzM_7QXQDZw");
+        System.out.println(obj);
         TextMessage textMessage = new TextMessage();
         textMessage.setContent(UUID.randomUUID().toString() + "中文");
-        textMessage.setTo("oPFwRxCG65Tn2xw_FaK2IXV21uBc");
+        textMessage.setTo("oiKvNt0neOAB8ddS0OzM_7QXQDZw");
         protocol.send(textMessage);
     }
 

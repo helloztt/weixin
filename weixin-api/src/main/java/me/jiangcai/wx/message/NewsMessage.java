@@ -9,6 +9,8 @@ import lombok.Setter;
 import lombok.ToString;
 import me.jiangcai.wx.message.support.NewsArticle;
 
+import java.util.Map;
+
 /**
  * @author CJ
  */
@@ -20,7 +22,7 @@ public class NewsMessage extends Message {
 
     @JsonProperty("ArticleCount")
     private final int count;
-//    @JacksonXmlElementWrapper(useWrapping=false)
+    //    @JacksonXmlElementWrapper(useWrapping=false)
     @JacksonXmlElementWrapper(localName = "Articles")
     @JacksonXmlProperty(localName = "item")
     private final NewsArticle[] articles;
@@ -29,5 +31,15 @@ public class NewsMessage extends Message {
         super(MessageType.news);
         count = articles.length;
         this.articles = articles;
+    }
+
+    @Override
+    protected void putMessageContent(Map<String, Object> data) {
+        throw new IllegalStateException("no such implementations.");
+    }
+
+    @Override
+    public boolean sameContent(Message message) {
+        return false;
     }
 }

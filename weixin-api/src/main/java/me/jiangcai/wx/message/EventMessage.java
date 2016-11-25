@@ -8,6 +8,9 @@ import lombok.Setter;
 import lombok.ToString;
 import me.jiangcai.wx.message.support.WeixinEvent;
 
+import java.util.Map;
+import java.util.Objects;
+
 /**
  * @author CJ
  */
@@ -40,5 +43,24 @@ public class EventMessage extends Message {
 
     public EventMessage() {
         super(MessageType.event);
+    }
+
+    @Override
+    protected void putMessageContent(Map<String, Object> data) {
+        throw new IllegalArgumentException("EventMessage can not be send.");
+    }
+
+    @Override
+    public boolean sameContent(Message message) {
+        if (!(message instanceof EventMessage)) {
+            return false;
+        }
+        EventMessage eventMessage = (EventMessage) message;
+        return Objects.equals(event, eventMessage.event)
+                && Objects.equals(key, eventMessage.key)
+                && Objects.equals(ticket, eventMessage.ticket)
+                && Objects.equals(latitude, eventMessage.latitude)
+                && Objects.equals(longitude, eventMessage.longitude)
+                && Objects.equals(precision, eventMessage.precision);
     }
 }
