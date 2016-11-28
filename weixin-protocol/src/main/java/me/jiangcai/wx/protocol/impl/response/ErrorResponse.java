@@ -12,6 +12,6 @@ import lombok.EqualsAndHashCode;
 public class ErrorResponse extends BaseResponse {
     @JsonProperty("openid")
     private String openId;
-    @JsonProperty("msgid")
-    private String messageId;
+//    @JsonProperty("msgid")
+//    private String messageId;
 }
