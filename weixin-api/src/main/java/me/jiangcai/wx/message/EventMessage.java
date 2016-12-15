@@ -30,6 +30,11 @@ public class EventMessage extends Message {
     @JsonProperty("Ticket")
     private String ticket;
 
+    @JsonProperty("MenuId")
+    private String menuId;
+    @JsonProperty("Status")
+    private String status;
+
     // 分享地理信息
     @JsonProperty("Latitude")
     private double latitude;
