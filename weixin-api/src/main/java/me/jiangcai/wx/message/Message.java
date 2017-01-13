@@ -37,7 +37,7 @@ public abstract class Message implements Cloneable {
      */
     @JsonIgnore
     private PublicAccount account;
-    @JsonProperty(value = "MsgID", access = JsonProperty.Access.WRITE_ONLY)
+    @JsonProperty(value = "MsgID")
     private String id;
     @JacksonXmlCData
     @JsonProperty("ToUserName")
