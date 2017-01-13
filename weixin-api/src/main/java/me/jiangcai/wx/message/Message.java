@@ -1,6 +1,7 @@
 package me.jiangcai.wx.message;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -27,6 +28,7 @@ import java.util.Map;
 @EqualsAndHashCode
 @ToString
 @JacksonXmlRootElement(localName = "xml")
+@JsonIgnoreProperties(value = {"MsgID"})
 public abstract class Message implements Cloneable {
 
     @JacksonXmlCData
@@ -37,7 +39,7 @@ public abstract class Message implements Cloneable {
      */
     @JsonIgnore
     private PublicAccount account;
-    @JsonProperty(value = "MsgID")
+    @JsonProperty(value = "MsgId")
     private String id;
     @JacksonXmlCData
     @JsonProperty("ToUserName")
