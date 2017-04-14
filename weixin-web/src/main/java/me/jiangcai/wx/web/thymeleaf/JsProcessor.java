@@ -9,6 +9,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
+import org.springframework.util.StringUtils;
 import org.thymeleaf.context.ITemplateContext;
 import org.thymeleaf.context.WebEngineContext;
 import org.thymeleaf.engine.AttributeName;
@@ -42,19 +43,19 @@ public class JsProcessor extends AbstractAttributeTagProcessor implements Weixin
             "onMenuShareWeibo",
             "onMenuShareQZone",
             "hideMenuItems",
-//            "showAllNonBaseMenuItem"
+            "showAllNonBaseMenuItem"
     };
     @Autowired
     private WeixinRequestHandlerMapping mapping;
 
-//    public JsProcessor() {
+    //    public JsProcessor() {
 //        super(TemplateMode.HTML, "wx",
 //                "js", true
 //                , "js", true
 //                , 100);
 //    }
-@Autowired
-private Environment environment;
+    @Autowired
+    private Environment environment;
 
 
 //    @Override
@@ -83,6 +84,9 @@ private Environment environment;
         assert publicAccount != null;
 
         String[] namedApi = attributeValue.split(",");
+        if (namedApi.length == 1 && StringUtils.isEmpty(namedApi[0])) {
+            namedApi = new String[0];
+        }
         String[] api = new String[namedApi.length + FixedAPI.length];
 
         System.arraycopy(FixedAPI, 0, api, 0, FixedAPI.length);
