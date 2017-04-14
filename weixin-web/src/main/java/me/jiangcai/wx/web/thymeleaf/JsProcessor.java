@@ -42,7 +42,7 @@ public class JsProcessor extends AbstractAttributeTagProcessor implements Weixin
             "onMenuShareWeibo",
             "onMenuShareQZone",
             "hideMenuItems",
-            "showAllNonBaseMenuItem"
+//            "showAllNonBaseMenuItem"
     };
     @Autowired
     private WeixinRequestHandlerMapping mapping;
