@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import me.jiangcai.wx.protocol.exception.BadAccessException;
 import me.jiangcai.wx.protocol.exception.BadAuthAccessException;
+import me.jiangcai.wx.protocol.exception.IllegalOpenIdException;
 import me.jiangcai.wx.protocol.exception.ProtocolException;
 import me.jiangcai.wx.protocol.impl.response.BaseResponse;
 import me.jiangcai.wx.protocol.impl.response.ErrorResponse;
@@ -80,6 +81,10 @@ public class WeixinResponseHandler<T> extends AbstractResponseHandler<T> {
         //        40030	不合法的refresh_token
         if (response.getCode() == 40029 || response.getCode() == 40030)
             throw new BadAuthAccessException();
+
+        //
+        if (response.getCode() == 40003)
+            throw new IllegalOpenIdException();
 
 
         // 分析下错误 现在暴力点 直接。。

@@ -14,6 +14,7 @@ import me.jiangcai.wx.model.message.TemplateMessageLocate;
 import me.jiangcai.wx.model.message.TemplateMessageParameter;
 import me.jiangcai.wx.model.message.TemplateMessageStyle;
 import me.jiangcai.wx.model.message.TemplateParameterAdjust;
+import me.jiangcai.wx.protocol.exception.IllegalOpenIdException;
 import me.jiangcai.wx.protocol.impl.handler.WeixinResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -262,6 +263,22 @@ public class ProtocolTest {
         menu4.setData("http://wxtest.jiangcai.me/wxtest/js.html");
 
         protocol.createMenu(new Menu[]{menu1, menu2, menu4});
+    }
+
+    @Test
+    public void userList() {
+        protocol.openIdList().forEach(openId -> {
+            System.out.println(openId);
+            MyWeixinUserDetail detail = protocol.userDetail(openId);
+            System.out.println(detail);
+        });
+
+        try {
+            System.out.println(protocol.userDetail("bad"));
+            throw new AssertionError("应当抛出错误");
+        } catch (IllegalOpenIdException ignored) {
+
+        }
     }
 
     private Menu randomMenu(boolean allowSub) {

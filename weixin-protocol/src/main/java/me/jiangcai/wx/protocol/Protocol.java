@@ -166,4 +166,10 @@ public interface Protocol {
      * @throws ProtocolException
      */
     void send(Message message) throws ProtocolException;
+
+    /**
+     * @return 所有openId
+     * @throws ProtocolException
+     */
+    List<String> openIdList() throws ProtocolException;
 }

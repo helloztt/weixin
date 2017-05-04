@@ -11,6 +11,7 @@ import me.jiangcai.wx.model.SceneCode;
 import me.jiangcai.wx.model.Template;
 import me.jiangcai.wx.model.TemplateList;
 import me.jiangcai.wx.model.UserAccessResponse;
+import me.jiangcai.wx.model.UserList;
 import me.jiangcai.wx.model.WeixinUser;
 import me.jiangcai.wx.model.WeixinUserDetail;
 import me.jiangcai.wx.model.message.TemplateMessageLocate;
@@ -296,6 +297,31 @@ class ProtocolImpl implements Protocol {
             return client.execute(create, new WeixinResponseHandler<>(CreateQRCodeResponse.class)).toCode();
         } catch (IOException ex) {
             throw new ClientException(ex);
+        }
+    }
+
+    @Override
+    public List<String> openIdList() throws ProtocolException {
+        // https://api.weixin.qq.com/cgi-bin/user/get?access_token=ACCESS_TOKEN&next_openid=NEXT_OPENID
+        // https://api.weixin.qq.com/cgi-bin/user/info?access_token=ACCESS_TOKEN&openid=OPENID&lang=zh_CN
+        List<String> list = new ArrayList<>();
+        String next = null;
+        while (true) {
+            HttpGet get;
+            if (next == null)
+                get = newGet("/user/get");
+            else
+                get = newGet("/user/get", new BasicNameValuePair("next_openid", next));
+
+            try {
+                UserList list1 = client.execute(get, new WeixinResponseHandler<>(UserList.class));
+                if (list1.getData() == null || list1.getData().getList().isEmpty())
+                    return list;
+                next = list1.getNext();
+                list.addAll(list1.getData().getList());
+            } catch (IOException e) {
+                throw new ClientException(e);
+            }
         }
     }
 
