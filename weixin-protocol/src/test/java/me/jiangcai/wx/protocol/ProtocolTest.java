@@ -90,7 +90,7 @@ public class ProtocolTest {
     @Test
     @Ignore
     public void realTemplate() {
-        // 款爷二手
+        // 款爷二手的模板
         protocol.sendTemplate("oPFwRxCG65Tn2xw_FaK2IXV21uBc"
                 , new TemplateMessageStyle() {
                     String templateId = "lHGV3WXyfgp-xq467eaaQ4OhrSLgeI9BkdAGztqUYJg";

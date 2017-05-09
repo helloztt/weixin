@@ -15,6 +15,7 @@ import java.util.Locale;
 @Data
 public class WeixinUserDetail {
 
+    private String appId;
     @JsonProperty("openid")
     @OpenId
     private String openId;
@@ -34,6 +35,26 @@ public class WeixinUserDetail {
      */
     @JsonProperty("unionid")
     private String unionId;
+
+    /**
+     * 将属性从src复制到dist
+     *
+     * @param dist dist
+     * @param src  src
+     */
+    public static void Copy(WeixinUserDetail dist, WeixinUserDetail src) {
+        dist.setAppId(src.getAppId());
+        dist.setProvince(src.getProvince());
+        dist.setCity(src.getCity());
+        dist.setCountry(src.getCountry());
+        dist.setGender(src.getGender());
+        dist.setHeadImageUrl(src.getHeadImageUrl());
+        dist.setLocale(src.getLocale());
+        dist.setNickname(src.getNickname());
+        dist.setOpenId(src.getOpenId());
+        dist.setPrivilege(src.getPrivilege());
+        dist.setUnionId(src.getUnionId());
+    }
 
 
 }

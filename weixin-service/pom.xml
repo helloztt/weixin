@@ -43,9 +43,21 @@
         </dependency>
         <dependency>
             <groupId>me.jiangcai.lib</groupId>
+            <artifactId>spring</artifactId>
+            <version>${jiangcai.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>me.jiangcai.lib</groupId>
             <artifactId>test</artifactId>
             <version>${jiangcai.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-jpa</artifactId>
+            <version>1.10.3.RELEASE</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

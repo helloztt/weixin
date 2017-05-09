@@ -194,7 +194,9 @@ class ProtocolImpl implements Protocol {
                 , new BasicNameValuePair("openid", openId)
                 , new BasicNameValuePair("lang", account.getLocale().toString())
         );
-        return client.execute(getInfo, new WeixinResponseHandler<>(WeixinUserDetail.class));
+        final WeixinUserDetail userDetail = client.execute(getInfo, new WeixinResponseHandler<>(WeixinUserDetail.class));
+        userDetail.setAppId(account.getAppID());
+        return userDetail;
     }
 
     @Override
@@ -330,7 +332,9 @@ class ProtocolImpl implements Protocol {
         HttpGet get = newGet("/user/info", new BasicNameValuePair("openid", openId),
                 new BasicNameValuePair("lang", account.getLocale().toString()));
         try {
-            return client.execute(get, new WeixinResponseHandler<>(MyWeixinUserDetail.class));
+            final MyWeixinUserDetail userDetail = client.execute(get, new WeixinResponseHandler<>(MyWeixinUserDetail.class));
+            userDetail.setAppId(account.getAppID());
+            return userDetail;
         } catch (IOException e) {
             throw new ClientException(e);
         }
