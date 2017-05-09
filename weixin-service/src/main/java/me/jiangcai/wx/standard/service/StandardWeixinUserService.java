@@ -32,7 +32,10 @@ public class StandardWeixinUserService implements WeixinUserService {
         if (clazz == WeixinUserDetail.class) {
             StandardWeixinUser user = standardWeixinUserRepository.findOne(new AppIdOpenID(account.getAppID(), openId));
             // 是否需要刷新？
-            if (user == null || user.getLastRefreshDetailTime() == null || user.getLastRefreshDetailTime().isBefore(LocalDateTime.now().minusMonths(1))) {
+            if (user == null
+                    || user.getLastRefreshDetailTime() == null
+                    || (user.getLastRefreshDetailTime().isBefore(LocalDateTime.now().minusMonths(1)) && user.isAbleDetail())
+                    ) {
                 WeixinUserDetail detail = Protocol.forAccount(account).userDetail(openId, this, data);
                 // 拿到详情了
                 if (user == null) {
