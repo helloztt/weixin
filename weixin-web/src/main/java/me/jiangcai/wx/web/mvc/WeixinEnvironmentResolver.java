@@ -24,7 +24,7 @@ public class WeixinEnvironmentResolver implements HandlerMethodArgumentResolver 
     @Override
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer
             , NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
-        boolean result = WeixinWebSpringConfig.isWeixinRequest(webRequest.getNativeResponse(HttpServletRequest.class));
+        boolean result = WeixinWebSpringConfig.isWeixinRequest(webRequest.getNativeRequest(HttpServletRequest.class));
         // 如果是
         if (parameter.getParameterType() == String.class)
             return result ? "true" : "false";
