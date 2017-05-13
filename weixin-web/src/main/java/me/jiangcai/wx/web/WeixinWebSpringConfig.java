@@ -2,6 +2,7 @@ package me.jiangcai.wx.web;
 
 import me.jiangcai.wx.WeixinSpringConfig;
 import me.jiangcai.wx.web.mvc.OpenIdArgumentResolver;
+import me.jiangcai.wx.web.mvc.WeixinEnvironmentResolver;
 import me.jiangcai.wx.web.mvc.WeixinInterceptor;
 import me.jiangcai.wx.web.mvc.WeixinUserDetailResolver;
 import me.jiangcai.wx.web.thymeleaf.JsProcessor;
@@ -14,6 +15,8 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.Enumeration;
 import java.util.List;
 
 /**
@@ -36,12 +39,30 @@ public class WeixinWebSpringConfig extends WeixinSpringConfig {
     private OpenIdArgumentResolver openIdArgumentResolver;
     @Autowired
     private WeixinUserDetailResolver weixinUserDetailResolver;
+    @Autowired
+    private WeixinEnvironmentResolver weixinEnvironmentResolver;
+
+    /**
+     * @param request 请求
+     * @return 是否为微信浏览器发起的请求
+     */
+    public static boolean isWeixinRequest(HttpServletRequest request) {
+        final Enumeration<String> headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String name = headerNames.nextElement();
+            if (name.equalsIgnoreCase("user-agent")) {
+                return request.getHeader(name).contains("MicroMessenger");
+            }
+        }
+        return false;
+    }
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
         super.addArgumentResolvers(argumentResolvers);
         argumentResolvers.add(openIdArgumentResolver);
         argumentResolvers.add(weixinUserDetailResolver);
+        argumentResolvers.add(weixinEnvironmentResolver);
     }
 
     @EnableWebMvc
