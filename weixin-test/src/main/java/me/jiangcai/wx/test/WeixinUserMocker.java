@@ -10,7 +10,7 @@ import java.util.Random;
 import java.util.UUID;
 
 /**
- * 模拟用户信息
+ * 模拟用户信息，客户端系统可以提供这么一个Bean表示用微信的都是这个人；也可以不提供则系统随机伪造F
  *
  * @author CJ
  */
