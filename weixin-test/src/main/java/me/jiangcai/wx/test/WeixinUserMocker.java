@@ -19,7 +19,7 @@ public interface WeixinUserMocker {
     static WeixinUserDetail randomWeixinUserDetail() {
         Random random = new Random();
         WeixinUserDetail detail = new WeixinUserDetail();
-        detail.setOpenId(UUID.randomUUID().toString().replace("-", ""));
+        detail.setOpenId(UUID.randomUUID().toString().replace("-", "").substring(0, 30));
         detail.setCity("神州");
         detail.setCountry("夷洲");
         detail.setGender(Gender.values()[random.nextInt(Gender.values().length)]);
