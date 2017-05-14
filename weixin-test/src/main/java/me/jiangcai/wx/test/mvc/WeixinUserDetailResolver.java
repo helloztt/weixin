@@ -60,6 +60,7 @@ public class WeixinUserDetailResolver extends me.jiangcai.wx.web.mvc.WeixinUserD
 //            }
         }
         final WeixinUserDetail weixinUserDetail = mocker.mockUser(mavContainer, webRequest);
+        weixinUserDetail.setAppId(account.getAppID());
         if (session != null) {
             session.setAttribute(DetailKey + account.getAppID(), weixinUserDetail);
             String openId = (String) session.getAttribute(SK_Prefix_OpenID + account.getAppID());
