@@ -20,6 +20,6 @@ public class StringArrayConverter implements AttributeConverter<String[], String
     public String[] convertToEntityAttribute(String dbData) {
         if (dbData == null)
             return null;
-        return dbData.split(".");
+        return dbData.split(",");
     }
 }
