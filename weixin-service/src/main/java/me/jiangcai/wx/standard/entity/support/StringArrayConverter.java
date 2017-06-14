@@ -11,11 +11,15 @@ public class StringArrayConverter implements AttributeConverter<String[], String
 
     @Override
     public String convertToDatabaseColumn(String[] attribute) {
-        return null;
+        if (attribute == null)
+            return null;
+        return String.join(",", attribute);
     }
 
     @Override
     public String[] convertToEntityAttribute(String dbData) {
-        return new String[0];
+        if (dbData == null)
+            return null;
+        return dbData.split(".");
     }
 }
