@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * @author CJ
@@ -36,19 +39,27 @@ public class WeixinRequestHandler {
         message.setAccount(publicAccount);
         applicationEventPublisher.publishEvent(message);
 
-        for (MessageReply messageReply : applicationContext.getBeansOfType(MessageReply.class).values()) {
+        final Collection<MessageReply> values = applicationContext.getBeansOfType(MessageReply.class).values();
+        log.debug("There has reply:" + values.size());
+
+        List<Message> messageList = new ArrayList<>();
+
+        for (MessageReply messageReply : values) {
             if (!messageReply.focus(publicAccount, message))
                 continue;
             Message reply = messageReply.reply(publicAccount, message);
             if (reply == null)
-                return null;
+                continue;
 //            reply.setId(UUID.randomUUID().toString());
             reply.setTime(LocalDateTime.now());
             reply.setFrom(message.getTo());
             reply.setTo(message.getFrom());
-            
-            return reply;
+
+            messageList.add(reply);
         }
+
+        if (!messageList.isEmpty())
+            return messageList.get(0);
 
         return null;
     }

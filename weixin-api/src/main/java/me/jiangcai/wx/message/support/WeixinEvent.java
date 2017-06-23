@@ -9,5 +9,6 @@ public enum WeixinEvent {
     LOCATION,
     CLICK,
     VIEW,
-    TEMPLATESENDJOBFINISH
+    TEMPLATESENDJOBFINISH,
+    SCAN
 }

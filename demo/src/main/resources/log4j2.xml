@@ -11,6 +11,8 @@
     <loggers>
 
         <logger name="me.jiangcai.wx" level="debug"/>
+        <logger name="me.jiangcai.wxtest" level="debug"/>
+
         <root level="info">
             <appender-ref ref="Console"/>
             <appender-ref ref="webLog"/>
