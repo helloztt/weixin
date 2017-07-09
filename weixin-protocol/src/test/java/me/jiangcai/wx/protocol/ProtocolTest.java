@@ -69,6 +69,8 @@ public class ProtocolTest {
     public void qrCode() {
         SceneCode code = protocol.createQRCode(1, 60);
         System.out.println(code);
+        code = protocol.createQRCode(100000, null);
+        System.out.println(code);
 
         MyWeixinUserDetail detail = protocol.userDetail("oiKvNt7Z-pzBTkhDZTCc5DU4ilHs");
         System.out.println(detail);
