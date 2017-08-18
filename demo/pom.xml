@@ -92,7 +92,7 @@
                 <executions>
                     <execution>
                         <id>add-source</id>
-                        <phase>generate-sources</phase>
+                        <phase>initialize</phase>
                         <goals>
                             <goal>add-source</goal>
                         </goals>
