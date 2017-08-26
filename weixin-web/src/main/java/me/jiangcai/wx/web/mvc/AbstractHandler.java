@@ -50,7 +50,8 @@ public abstract class AbstractHandler {
 
             if (session != null) {
                 String openId = (String) session.getAttribute(SK_Prefix_OpenID + account.getAppID());
-                if (!StringUtils.isEmpty(openId)) {
+                // 可能会丢出TOKEN 无效，这个时候收到的code可能已更新，必须确保给予机会让他获取更新
+                if (!StringUtils.isEmpty(openId) && clazz == String.class) {
                     endValue = weixinUserService.userInfo(account, openId, clazz, webRequest);
                     if (endValue != null)
                         return endValue;

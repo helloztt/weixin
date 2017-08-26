@@ -46,7 +46,7 @@ public interface WeixinUser {
      * @return 当前toke可以拉去详情么?
      */
     default boolean isAbleDetail() {
-        return Arrays.binarySearch(getTokenScopes(), "snsapi_userinfo") >= 0;
+        return getTokenScopes() != null && Arrays.binarySearch(getTokenScopes(), "snsapi_userinfo") >= 0;
     }
 
 }
