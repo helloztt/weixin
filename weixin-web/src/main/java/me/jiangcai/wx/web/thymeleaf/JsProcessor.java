@@ -26,7 +26,7 @@ import java.nio.charset.Charset;
 /**
  * 它可以帮助配置当前公众号或者指定公众号的JS配置
  * 本身的过程会比较复杂,因为它会自己调度一次ajax请求以让服务端给出参数配置微信sdk
- * <p>
+ * http://qydev.weixin.qq.com/wiki/index.php?title=%E5%BE%AE%E4%BF%A1JS-SDK%E6%8E%A5%E5%8F%A3#.E6.89.B9.E9.87.8F.E9.9A.90.E8.97.8F.E5.8A.9F.E8.83.BD.E6.8C.89.E9.92.AE.E6.8E.A5.E5.8F.A3
  * 客户端要求预先载入jQuery 版本无要求
  *
  * @author CJ
