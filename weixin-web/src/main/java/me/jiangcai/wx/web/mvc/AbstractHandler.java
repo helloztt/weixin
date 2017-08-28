@@ -42,22 +42,8 @@ public abstract class AbstractHandler {
             throw new NoWeixinClientException();
 
         try {
-            // 先看下是否可以直接完成
-            T endValue = currentAuth.apply(account);
-            if (endValue != null)
-                return endValue;
             HttpSession session = webRequest.getNativeRequest(HttpServletRequest.class).getSession();
-
-            if (session != null) {
-                String openId = (String) session.getAttribute(SK_Prefix_OpenID + account.getAppID());
-                // 可能会丢出TOKEN 无效，这个时候收到的code可能已更新，必须确保给予机会让他获取更新
-                if (!StringUtils.isEmpty(openId) && clazz == String.class) {
-                    endValue = weixinUserService.userInfo(account, openId, clazz, webRequest);
-                    if (endValue != null)
-                        return endValue;
-                }
-            }
-
+            // 如果收到了 code
             // 是否已获得code
             String code = webRequest.getParameter("code");
 
@@ -92,6 +78,21 @@ public abstract class AbstractHandler {
                 }
                 return weixinUserService.userInfo(account, openId, clazz, webRequest);
             }
+            // 先看下是否可以直接完成
+            T endValue = currentAuth.apply(account);
+            if (endValue != null)
+                return endValue;
+
+            if (session != null) {
+                String openId = (String) session.getAttribute(SK_Prefix_OpenID + account.getAppID());
+                // 可能会丢出TOKEN 无效，这个时候收到的code可能已更新，必须确保给予机会让他获取更新
+                if (!StringUtils.isEmpty(openId) && clazz == String.class) {
+                    endValue = weixinUserService.userInfo(account, openId, clazz, webRequest);
+                    if (endValue != null)
+                        return endValue;
+                }
+            }
+
         } catch (BadAuthAccessException ex) {
             //
             log.debug("User's Auth Token is offline or bad scope", ex);
