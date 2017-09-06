@@ -129,8 +129,19 @@ public interface Protocol {
      * @param arguments 消息参数
      * @throws ProtocolException
      */
-    void sendTemplate(String openId, TemplateMessageStyle style, String url, TemplateParameterAdjust adjust, Object... arguments)
+    void sendTemplate(String openId, TemplateMessageStyle style, String url, TemplateParameterAdjust adjust
+            , Object... arguments)
             throws ProtocolException;
+
+    /**
+     * 创建字符场景二维码
+     *
+     * @param sceneStr 场景字符串；<b>绝对不可以是一个可以被任何数字格式解析的字符串；必须携带有英文字符</b>
+     * @param seconds  最大不超过2592000（即30天），此字段如果不填，则创建的是永久二维码
+     * @return 二维码下载地址
+     * @throws ProtocolException
+     */
+    SceneCode createQRCode(String sceneStr, Integer seconds) throws ProtocolException;
 
     /**
      * 创建场景二维码

@@ -41,6 +41,11 @@ public class MyConfig {
             public void happen(PublicAccount account, Message message, int sceneId) {
                 log.debug("happen:" + sceneId);
             }
+
+            @Override
+            public void happen(PublicAccount account, Message message, String sceneStr) {
+                log.debug("happen:" + sceneStr);
+            }
         };
     }
 

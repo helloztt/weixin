@@ -272,6 +272,41 @@ class ProtocolImpl implements Protocol {
     }
 
     @Override
+    public SceneCode createQRCode(String sceneStr, Integer seconds) throws ProtocolException {
+        HttpPost create = newPost("/qrcode/create");
+
+        // 准备数据
+        HashMap<String, Object> toPost = new HashMap<>();
+        if (seconds != null) {
+            toPost.put("expire_seconds", seconds);
+            toPost.put("action_name", "QR_STR_SCENE");
+        } else {
+            toPost.put("action_name", "QR_LIMIT_STR_SCENE");
+        }
+        HashMap<String, Object> scene = new HashMap<>();
+        scene.put("scene_str", sceneStr);
+        HashMap<String, Object> action = new HashMap<>();
+        action.put("scene", scene);
+        toPost.put("action_info", action);
+
+        return getSceneCode(create, toPost);
+    }
+
+    private SceneCode getSceneCode(HttpPost create, HashMap<String, Object> toPost) {
+        try {
+            HttpEntity entity = EntityBuilder.create()
+                    .setContentType(ContentType.create("application/json", "UTF-8"))
+                    .setText(objectMapper.writeValueAsString(toPost))
+                    .build();
+
+            create.setEntity(entity);
+            return client.execute(create, new WeixinResponseHandler<>(CreateQRCodeResponse.class)).toCode();
+        } catch (IOException ex) {
+            throw new ClientException(ex);
+        }
+    }
+
+    @Override
     public SceneCode createQRCode(int sceneId, Integer seconds) throws ProtocolException {
         HttpPost create = newPost("/qrcode/create");
 
@@ -289,17 +324,7 @@ class ProtocolImpl implements Protocol {
         action.put("scene", scene);
         toPost.put("action_info", action);
 
-        try {
-            HttpEntity entity = EntityBuilder.create()
-                    .setContentType(ContentType.create("application/json", "UTF-8"))
-                    .setText(objectMapper.writeValueAsString(toPost))
-                    .build();
-
-            create.setEntity(entity);
-            return client.execute(create, new WeixinResponseHandler<>(CreateQRCodeResponse.class)).toCode();
-        } catch (IOException ex) {
-            throw new ClientException(ex);
-        }
+        return getSceneCode(create, toPost);
     }
 
     @Override

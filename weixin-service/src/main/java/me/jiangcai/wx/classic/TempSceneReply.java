@@ -11,9 +11,11 @@ import org.springframework.util.NumberUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * 可监控临时场景事件发生
+ * 可监控二维码被扫场景事件发生
  *
  * @author CJ
+ * @see me.jiangcai.wx.protocol.Protocol#createQRCode(int, Integer)
+ * @see me.jiangcai.wx.protocol.Protocol#createQRCode(String, Integer)
  */
 public abstract class TempSceneReply implements MessageReply {
 
@@ -25,7 +27,11 @@ public abstract class TempSceneReply implements MessageReply {
             EventMessage event = (EventMessage) message;
             if (event.getEvent() == WeixinEvent.SCAN) {
                 log.debug("抓取场景事件：" + event.getKey());
-                happen(account, message, NumberUtils.parseNumber(event.getKey(), Integer.class));
+                try {
+                    happen(account, message, NumberUtils.parseNumber(event.getKey(), Integer.class));
+                } catch (NumberFormatException ex) {
+                    happen(account, message, event.getKey());
+                }
                 return true;
             }
             if (event.getEvent() == WeixinEvent.subscribe) {
@@ -33,7 +39,11 @@ public abstract class TempSceneReply implements MessageReply {
                     if (event.getKey().startsWith("qrscene_")) {
                         final String substring = event.getKey().substring("qrscene_".length());
                         log.debug("抓取场景事件：" + substring);
-                        happen(account, message, NumberUtils.parseNumber(substring, Integer.class));
+                        try {
+                            happen(account, message, NumberUtils.parseNumber(substring, Integer.class));
+                        } catch (NumberFormatException ex) {
+                            happen(account, message, substring);
+                        }
                         return true;
                     }
 
@@ -44,13 +54,24 @@ public abstract class TempSceneReply implements MessageReply {
     }
 
     /**
-     * 发生了临时场景
+     * 发生了扫码场景id的事件
      *
      * @param account 公众号
      * @param message 消息
      * @param sceneId 场景id
+     * @see me.jiangcai.wx.protocol.Protocol#createQRCode(int, Integer)
      */
     public abstract void happen(PublicAccount account, Message message, int sceneId);
+
+    /**
+     * 发生了扫码字符场景的事件
+     *
+     * @param account  公众号
+     * @param message  消息
+     * @param sceneStr 场景str
+     * @see me.jiangcai.wx.protocol.Protocol#createQRCode(String, Integer)
+     */
+    public abstract void happen(PublicAccount account, Message message, String sceneStr);
 
     @Override
     public Message reply(PublicAccount account, Message message) {
