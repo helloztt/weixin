@@ -64,6 +64,11 @@
             <version>1.16.4</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.luffy.libs</groupId>
+            <artifactId>libseext</artifactId>
+            <version>1.4</version>
+        </dependency>
     </dependencies>
 
     <repositories>

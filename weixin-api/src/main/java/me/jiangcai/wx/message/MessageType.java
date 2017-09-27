@@ -9,7 +9,11 @@ public enum MessageType {
      * 图文
      */
     news,
-    event;
+    event,
+    /**
+     * 图片消息
+     */
+    image,;
 
     public Class<? extends Message> messageClass() {
         if (this == text)
@@ -18,6 +22,8 @@ public enum MessageType {
             return EventMessage.class;
         if (this == news)
             return NewsMessage.class;
+        if (this == image)
+            return ImageMessage.class;
         throw new IllegalStateException("unsupported for " + this);
     }
 }

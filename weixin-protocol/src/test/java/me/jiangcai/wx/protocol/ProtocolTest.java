@@ -24,6 +24,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -74,6 +75,16 @@ public class ProtocolTest {
 
         MyWeixinUserDetail detail = protocol.userDetail("oiKvNt7Z-pzBTkhDZTCc5DU4ilHs");
         System.out.println(detail);
+    }
+
+    /**
+     * 发送图片消息的测试
+     */
+    @Test
+    public void image() throws IOException {
+        String id = protocol.addImage(false, new ClassPathResource("/images/image.JPG").getFile());
+        System.out.println(id);
+
     }
 
     @Test

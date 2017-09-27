@@ -1,6 +1,7 @@
 package me.jiangcai.wx.protocol.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import me.jiangcai.lib.seext.ImageUtils;
 import me.jiangcai.wx.TokenType;
 import me.jiangcai.wx.WeixinUserService;
 import me.jiangcai.wx.message.Message;
@@ -29,29 +30,38 @@ import me.jiangcai.wx.protocol.impl.response.AccessToken;
 import me.jiangcai.wx.protocol.impl.response.AddTemplate;
 import me.jiangcai.wx.protocol.impl.response.CreateQRCodeResponse;
 import me.jiangcai.wx.protocol.impl.response.JavascriptTicket;
+import me.jiangcai.wx.protocol.impl.response.MediaResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.EntityBuilder;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.springframework.security.crypto.codec.Hex;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -66,38 +76,93 @@ class ProtocolImpl implements Protocol {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final PublicAccount account;
-    private final CloseableHttpClient client;
+//    private final CloseableHttpClient client;
 
     ProtocolImpl(PublicAccount account) {
         this.account = account;
-        client = HttpClientBuilder.create()
-                .build();
+//        client = HttpClientBuilder.create()
+//                .build();
+    }
+
+    private CloseableHttpClient requestClient() {
+        HttpClientBuilder builder = HttpClientBuilder.create();
+        builder = builder.setDefaultRequestConfig(RequestConfig.custom()
+                .setConnectTimeout(30000)
+                .setConnectionRequestTimeout(30000)
+                .setSocketTimeout(30000)
+                .build());
+//        if (environment.acceptsProfiles("test")) {
+//            builder.setSSLHostnameVerifier(new NoopHostnameVerifier());
+//        }
+
+        return builder.build();
     }
 
     @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        client.close();
+    public String addImage(boolean permanent, BufferedImage image, String type) throws ProtocolException {
+        // 先准备素材，然后整理成数据
+        final String imageType;
+        if (type != null)
+            imageType = type.toLowerCase(Locale.ENGLISH);
+        else
+            imageType = "png";
+
+        try {
+            final InputStream data = ImageUtils.scaleToLimitSize(image, imageType
+                    , 2 * 1024);
+            // 使用临时文件
+            Path path = Files.createTempFile("imageForMedia", "." + imageType);
+            try {
+                Files.copy(data, path, StandardCopyOption.REPLACE_EXISTING);
+                MultipartEntityBuilder builder = MultipartEntityBuilder.create()
+                        .addBinaryBody("media", path.toFile());
+//                        .addBinaryBody("media", data, ContentType.APPLICATION_OCTET_STREAM, "image." + imageType);
+                return addMedia(permanent, "image", builder);
+            } finally {
+                Files.delete(path);
+            }
+
+        } catch (IOException e) {
+            throw new ProtocolException(e);
+        }
+    }
+
+    private String addMedia(boolean permanent, String type, MultipartEntityBuilder builder) throws IOException {
+        if (!permanent) {
+//            builder =
+//                    builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+//                            .addTextBody("access_token", account.getAccessToken())
+//                            .addTextBody("type", type);
+            String url = buildUrl("/media/upload", new BasicNameValuePair("type", type));
+            HttpPost post = new HttpPost(url);
+            post.setEntity(builder.build());
+            try (CloseableHttpClient client = requestClient()) {
+                return client.execute(post, new WeixinResponseHandler<>(MediaResult.class)).getMediaId();
+            }
+        } else
+            throw new IllegalStateException("暂不支持永久素材");
     }
 
     @Override
     public void getJavascriptTicket() throws ProtocolException {
         HttpGet tokenGet = newGet("/ticket/getticket", new BasicNameValuePair("type", "jsapi"));
         try {
-            JavascriptTicket token = client.execute(tokenGet, new WeixinResponseHandler<>(JavascriptTicket.class));
+            try (CloseableHttpClient client = requestClient()) {
+                JavascriptTicket token = client.execute(tokenGet, new WeixinResponseHandler<>(JavascriptTicket.class));
 
-            if (token.getCode() != 0)
-                throw new ProtocolException(token.getMessage());
+                if (token.getCode() != 0)
+                    throw new ProtocolException(token.getMessage());
 
-            LocalDateTime time = LocalDateTime.now();
-            time = time.plusSeconds(token.getTime());
-            account.setJavascriptTimeToExpire(time);
-            account.setJavascriptTicket(token.getToken());
+                LocalDateTime time = LocalDateTime.now();
+                time = time.plusSeconds(token.getTime());
+                account.setJavascriptTimeToExpire(time);
+                account.setJavascriptTicket(token.getToken());
 
-            try {
-                account.getSupplier().updateToken(account, TokenType.javascript, token.getToken(), time);
-            } catch (Throwable throwable) {
-                log.debug("update tokens", throwable);
+                try {
+                    account.getSupplier().updateToken(account, TokenType.javascript, token.getToken(), time);
+                } catch (Throwable throwable) {
+                    log.debug("update tokens", throwable);
+                }
             }
 
         } catch (IOException ex) {
@@ -147,16 +212,18 @@ class ProtocolImpl implements Protocol {
     }
 
     private UserAccessResponse workWithUserAuth(WeixinUserService weixinUserService, HttpGet get, Object data) throws IOException {
-        UserAccessResponse response = client.execute(get, new WeixinResponseHandler<>(UserAccessResponse.class));
-        if (log.isDebugEnabled()) {
-            log.debug("UserAccessResponse:" + response + "  scope:");
-            for (String s : response.getScope()) {
-                log.debug(s);
+        try (CloseableHttpClient client = requestClient()) {
+            UserAccessResponse response = client.execute(get, new WeixinResponseHandler<>(UserAccessResponse.class));
+            if (log.isDebugEnabled()) {
+                log.debug("UserAccessResponse:" + response + "  scope:");
+                for (String s : response.getScope()) {
+                    log.debug(s);
+                }
             }
-        }
 
-        weixinUserService.updateUserToken(account, response, data);
-        return response;
+            weixinUserService.updateUserToken(account, response, data);
+            return response;
+        }
     }
 
     @Override
@@ -194,18 +261,23 @@ class ProtocolImpl implements Protocol {
                 , new BasicNameValuePair("openid", openId)
                 , new BasicNameValuePair("lang", account.getLocale().toString())
         );
-        final WeixinUserDetail userDetail = client.execute(getInfo, new WeixinResponseHandler<>(WeixinUserDetail.class));
-        userDetail.setAppId(account.getAppID());
-        return userDetail;
+        try (CloseableHttpClient client = requestClient()) {
+            final WeixinUserDetail userDetail = client.execute(getInfo, new WeixinResponseHandler<>(WeixinUserDetail.class));
+            userDetail.setAppId(account.getAppID());
+            return userDetail;
+        }
     }
 
     @Override
     public Optional<Template> findTemplate(Predicate<Template> predicate) throws ProtocolException {
         HttpGet getTemplate = newGet("/template/get_all_private_template");
         try {
-            TemplateList list = client.execute(getTemplate, new WeixinResponseHandler<>(TemplateList.class));
-            return list.getList().stream().filter(predicate)
-                    .findAny();
+            try (CloseableHttpClient client = requestClient()) {
+                TemplateList list = client.execute(getTemplate, new WeixinResponseHandler<>(TemplateList.class));
+                return list.getList().stream().filter(predicate)
+                        .findAny();
+            }
+
         } catch (IOException e) {
             throw new ProtocolException(e);
         }
@@ -300,7 +372,9 @@ class ProtocolImpl implements Protocol {
                     .build();
 
             create.setEntity(entity);
-            return client.execute(create, new WeixinResponseHandler<>(CreateQRCodeResponse.class)).toCode();
+            try (CloseableHttpClient client = requestClient()) {
+                return client.execute(create, new WeixinResponseHandler<>(CreateQRCodeResponse.class)).toCode();
+            }
         } catch (IOException ex) {
             throw new ClientException(ex);
         }
@@ -341,11 +415,13 @@ class ProtocolImpl implements Protocol {
                 get = newGet("/user/get", new BasicNameValuePair("next_openid", next));
 
             try {
-                UserList list1 = client.execute(get, new WeixinResponseHandler<>(UserList.class));
-                if (list1.getData() == null || list1.getData().getList().isEmpty())
-                    return list;
-                next = list1.getNext();
-                list.addAll(list1.getData().getList());
+                try (CloseableHttpClient client = requestClient()) {
+                    UserList list1 = client.execute(get, new WeixinResponseHandler<>(UserList.class));
+                    if (list1.getData() == null || list1.getData().getList().isEmpty())
+                        return list;
+                    next = list1.getNext();
+                    list.addAll(list1.getData().getList());
+                }
             } catch (IOException e) {
                 throw new ClientException(e);
             }
@@ -357,9 +433,11 @@ class ProtocolImpl implements Protocol {
         HttpGet get = newGet("/user/info", new BasicNameValuePair("openid", openId),
                 new BasicNameValuePair("lang", account.getLocale().toString()));
         try {
-            final MyWeixinUserDetail userDetail = client.execute(get, new WeixinResponseHandler<>(MyWeixinUserDetail.class));
-            userDetail.setAppId(account.getAppID());
-            return userDetail;
+            try (CloseableHttpClient client = requestClient()) {
+                final MyWeixinUserDetail userDetail = client.execute(get, new WeixinResponseHandler<>(MyWeixinUserDetail.class));
+                userDetail.setAppId(account.getAppID());
+                return userDetail;
+            }
         } catch (IOException e) {
             throw new ClientException(e);
         }
@@ -384,7 +462,9 @@ class ProtocolImpl implements Protocol {
                             .build();
 
                     addTemplate.setEntity(entity);
-                    style.setTemplateId(client.execute(addTemplate, new WeixinResponseHandler<>(AddTemplate.class)).getTemplateId());
+                    try (CloseableHttpClient client = requestClient()) {
+                        style.setTemplateId(client.execute(addTemplate, new WeixinResponseHandler<>(AddTemplate.class)).getTemplateId());
+                    }
                 } catch (IOException ex) {
                     throw new ClientException(ex);
                 }
@@ -415,7 +495,10 @@ class ProtocolImpl implements Protocol {
                     .setText(objectMapper.writeValueAsString(toPost))
                     .build();
             send.setEntity(entity);
-            client.execute(send, new VoidHandler());
+            try (CloseableHttpClient client = requestClient()) {
+                client.execute(send, new VoidHandler());
+            }
+
         } catch (IOException ex) {
             throw new ClientException(ex);
         }
@@ -465,7 +548,10 @@ class ProtocolImpl implements Protocol {
         postMenu.setEntity(entity);
 
         try {
-            client.execute(postMenu, new VoidHandler());
+            try (CloseableHttpClient client = requestClient()) {
+                client.execute(postMenu, new VoidHandler());
+            }
+
         } catch (IOException ex) {
             throw new ClientException(ex);
         }
@@ -475,17 +561,20 @@ class ProtocolImpl implements Protocol {
         HttpGet tokenGet = newTokenGet("/token?grant_type=client_credential&appid=" + account.getAppID() + "&secret=" + account.getAppSecret());
 
         try {
-            AccessToken token = client.execute(tokenGet, new AccessTokenHandler());
-            LocalDateTime time = LocalDateTime.now();
-            time = time.plusSeconds(token.getTime());
-            account.setTimeToExpire(time);
-            account.setAccessToken(token.getToken());
+            try (CloseableHttpClient client = requestClient()) {
+                AccessToken token = client.execute(tokenGet, new AccessTokenHandler());
+                LocalDateTime time = LocalDateTime.now();
+                time = time.plusSeconds(token.getTime());
+                account.setTimeToExpire(time);
+                account.setAccessToken(token.getToken());
 
-            try {
-                account.getSupplier().updateToken(account, TokenType.access, token.getToken(), time);
-            } catch (Throwable throwable) {
-                log.debug("update tokens", throwable);
+                try {
+                    account.getSupplier().updateToken(account, TokenType.access, token.getToken(), time);
+                } catch (Throwable throwable) {
+                    log.debug("update tokens", throwable);
+                }
             }
+
         } catch (IOException ex) {
             throw new ClientException(ex);
         }
@@ -496,7 +585,7 @@ class ProtocolImpl implements Protocol {
         return new HttpGet(urlBuilder);
     }
 
-    private String buildUrl(String uri, NameValuePair[] parameters) {
+    private String buildUrl(String uri, NameValuePair... parameters) {
         String url = "https://api.weixin.qq.com/cgi-bin" + uri + "?access_token="
                 + account.getAccessToken();
         return buildUrlWithUrl(url, parameters);

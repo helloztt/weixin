@@ -1,5 +1,6 @@
 package me.jiangcai.wx.protocol;
 
+import me.jiangcai.lib.seext.FileUtils;
 import me.jiangcai.wx.WeixinUserService;
 import me.jiangcai.wx.message.Message;
 import me.jiangcai.wx.model.Menu;
@@ -17,6 +18,10 @@ import me.jiangcai.wx.protocol.impl.ProtocolCallback;
 import me.jiangcai.wx.protocol.virtual.Action;
 import org.springframework.cglib.proxy.Enhancer;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -183,4 +188,24 @@ public interface Protocol {
      * @throws ProtocolException
      */
     List<String> openIdList() throws ProtocolException;
+
+    default String addImage(boolean permanent, File file) throws ProtocolException {
+        String type = FileUtils.fileExtensionName(file);
+        try {
+            BufferedImage image = ImageIO.read(file);
+            return addImage(permanent, image, type);
+        } catch (IOException ex) {
+            throw new ProtocolException(ex);
+        }
+    }
+
+    /**
+     * 按微信规则最大只有2m，但API并无要求；它会自行处理成符合规格的图片
+     *
+     * @param permanent 是否为永久素材
+     * @param image     图片
+     * @param type      推荐格式，默认png
+     * @return 新增素材
+     */
+    String addImage(boolean permanent, BufferedImage image, String type) throws ProtocolException;
 }
