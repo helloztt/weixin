@@ -1,6 +1,8 @@
 package me.jiangcai.wx.couple;
 
 import me.jiangcai.wx.MessageReply;
+import me.jiangcai.wx.message.ImageMessage;
+import me.jiangcai.wx.message.ImageMessageForReply;
 import me.jiangcai.wx.message.Message;
 import me.jiangcai.wx.model.PublicAccount;
 import me.jiangcai.wx.protocol.Algorithmic;
@@ -54,6 +56,10 @@ public class WeixinRequestHandler {
             reply.setTime(LocalDateTime.now());
             reply.setFrom(message.getTo());
             reply.setTo(message.getFrom());
+
+            if (reply instanceof ImageMessage) {
+                reply = new ImageMessageForReply((ImageMessage) reply);
+            }
 
             messageList.add(reply);
         }
