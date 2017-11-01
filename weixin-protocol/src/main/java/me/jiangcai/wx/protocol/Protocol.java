@@ -192,6 +192,12 @@ public interface Protocol {
      */
     List<String> openIdList() throws ProtocolException;
 
+    /**
+     * @param page 可选分页，若不传入则默认读取第一页20个素材
+     * @return 素材页
+     * @throws ProtocolException
+     * @since 2.1
+     */
     Page<NewsMediaItem> listNewsMedia(Pageable page) throws ProtocolException;
 
     default String addImage(boolean permanent, File file) throws ProtocolException {

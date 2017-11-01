@@ -48,6 +48,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.codec.Hex;
 
@@ -438,7 +439,13 @@ class ProtocolImpl implements Protocol {
         return listMedia(NewsMediaItem.class, "news", page);
     }
 
-    private <T extends MediaItem> Page<T> listMedia(Class<T> clazz, String type, Pageable page) {
+    private <T extends MediaItem> Page<T> listMedia(Class<T> clazz, String type, Pageable inputPage) {
+        final Pageable page;
+        if (inputPage != null) {
+            page = inputPage;
+        } else
+            page = new PageRequest(0, 20);
+
         HttpPost post = newPost("/material/batchget_material");
         HashMap<String, Object> data = new HashMap<>();
         data.put("type", type);
