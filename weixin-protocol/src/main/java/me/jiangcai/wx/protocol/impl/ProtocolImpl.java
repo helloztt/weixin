@@ -508,7 +508,12 @@ class ProtocolImpl implements Protocol {
         }
         return findTemplate(template -> template.getId().equals(style.getTemplateId()))
                 .orElseGet(() -> {
+                    if (style.getTemplateIdShort() == null)
+                        throw new IllegalStateException("没有可用的模板消息，也没有可提供添加的模板要素。");
                     style.setTemplateId(null);
+                    if (style.getTemplateId() != null) {
+                        throw new IllegalStateException("找不到特定固定的模板消息:" + style.getTemplateId());
+                    }
                     return getTemplate(style);
                 });
     }
