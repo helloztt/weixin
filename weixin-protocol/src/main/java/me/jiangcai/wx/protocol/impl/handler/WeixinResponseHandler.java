@@ -27,15 +27,19 @@ public class WeixinResponseHandler<T> extends AbstractResponseHandler<T> {
 
     private static final Log log = LogFactory.getLog(WeixinResponseHandler.class);
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    protected final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final Class<T> clazz;
+    private Class<T> clazz;
 
     public WeixinResponseHandler() {
         ParameterizedType type = (ParameterizedType) getClass().getGenericSuperclass();
-        @SuppressWarnings("unchecked")
-        Class<T> clazz = (Class<T>) type.getActualTypeArguments()[0];
-        this.clazz = clazz;
+        try {
+            @SuppressWarnings("unchecked")
+            Class<T> clazz = (Class<T>) type.getActualTypeArguments()[0];
+            this.clazz = clazz;
+        } catch (ClassCastException ex) {
+        }
+
     }
 
     public WeixinResponseHandler(Class<T> clazz) {
@@ -52,18 +56,22 @@ public class WeixinResponseHandler<T> extends AbstractResponseHandler<T> {
         }
 
         try {
-            T result = objectMapper.readValue(buffer.toByteArray(), clazz);
-            if (result instanceof BaseResponse) {
-                if (((BaseResponse) result).getCode() != 0) {
-                    return throwException(buffer);
-                }
-            }
-            return result;
+            return defaultResult(buffer);
         } catch (UnrecognizedPropertyException exception) {
             log.debug("[WEIXIN] unexpected:", exception);
             // 那应该是失败了哦
             return throwException(buffer);
         }
+    }
+
+    protected T defaultResult(ByteArrayOutputStream buffer) throws IOException {
+        T result = objectMapper.readValue(buffer.toByteArray(), clazz);
+        if (result instanceof BaseResponse) {
+            if (((BaseResponse) result).getCode() != 0) {
+                return throwException(buffer);
+            }
+        }
+        return result;
     }
 
     private T throwException(ByteArrayOutputStream buffer) throws IOException {

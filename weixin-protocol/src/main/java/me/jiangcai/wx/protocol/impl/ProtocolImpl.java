@@ -15,6 +15,8 @@ import me.jiangcai.wx.model.UserAccessResponse;
 import me.jiangcai.wx.model.UserList;
 import me.jiangcai.wx.model.WeixinUser;
 import me.jiangcai.wx.model.WeixinUserDetail;
+import me.jiangcai.wx.model.media.MediaItem;
+import me.jiangcai.wx.model.media.NewsMediaItem;
 import me.jiangcai.wx.model.message.TemplateMessageLocate;
 import me.jiangcai.wx.model.message.TemplateMessageStyle;
 import me.jiangcai.wx.model.message.TemplateParameterAdjust;
@@ -24,6 +26,7 @@ import me.jiangcai.wx.protocol.exception.BadAuthAccessException;
 import me.jiangcai.wx.protocol.exception.ClientException;
 import me.jiangcai.wx.protocol.exception.ProtocolException;
 import me.jiangcai.wx.protocol.impl.handler.AccessTokenHandler;
+import me.jiangcai.wx.protocol.impl.handler.MediaItemResponseHandler;
 import me.jiangcai.wx.protocol.impl.handler.VoidHandler;
 import me.jiangcai.wx.protocol.impl.handler.WeixinResponseHandler;
 import me.jiangcai.wx.protocol.impl.response.AccessToken;
@@ -44,6 +47,8 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.codec.Hex;
 
 import java.awt.*;
@@ -425,6 +430,28 @@ class ProtocolImpl implements Protocol {
             } catch (IOException e) {
                 throw new ClientException(e);
             }
+        }
+    }
+
+    @Override
+    public Page<NewsMediaItem> listNewsMedia(Pageable page) throws ProtocolException {
+        return listMedia(NewsMediaItem.class, "news", page);
+    }
+
+    private <T extends MediaItem> Page<T> listMedia(Class<T> clazz, String type, Pageable page) {
+        HttpPost post = newPost("/material/batchget_material");
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("type", type);
+        data.put("offset", page.getOffset());
+        data.put("count", page.getPageSize());
+        try {
+            try (CloseableHttpClient client = requestClient()) {
+                post.setEntity(EntityBuilder.create()
+                        .setText(objectMapper.writeValueAsString(data)).build());
+                return client.execute(post, new MediaItemResponseHandler<>(clazz, page));
+            }
+        } catch (IOException e) {
+            throw new ClientException(e);
         }
     }
 

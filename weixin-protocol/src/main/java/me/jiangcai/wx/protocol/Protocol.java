@@ -10,6 +10,7 @@ import me.jiangcai.wx.model.SceneCode;
 import me.jiangcai.wx.model.Template;
 import me.jiangcai.wx.model.UserAccessResponse;
 import me.jiangcai.wx.model.WeixinUserDetail;
+import me.jiangcai.wx.model.media.NewsMediaItem;
 import me.jiangcai.wx.model.message.TemplateMessageLocate;
 import me.jiangcai.wx.model.message.TemplateMessageStyle;
 import me.jiangcai.wx.model.message.TemplateParameterAdjust;
@@ -17,6 +18,8 @@ import me.jiangcai.wx.protocol.exception.ProtocolException;
 import me.jiangcai.wx.protocol.impl.ProtocolCallback;
 import me.jiangcai.wx.protocol.virtual.Action;
 import org.springframework.cglib.proxy.Enhancer;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -188,6 +191,8 @@ public interface Protocol {
      * @throws ProtocolException
      */
     List<String> openIdList() throws ProtocolException;
+
+    Page<NewsMediaItem> listNewsMedia(Pageable page) throws ProtocolException;
 
     default String addImage(boolean permanent, File file) throws ProtocolException {
         String type = FileUtils.fileExtensionName(file);

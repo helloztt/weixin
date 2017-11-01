@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -276,6 +277,14 @@ public class ProtocolTest {
         menu4.setData("http://wxtest.jiangcai.me/wxtest/js.html");
 
         protocol.createMenu(new Menu[]{menu1, menu2, menu4});
+    }
+
+    @Test
+    public void listNewsMedia() {
+        protocol.listNewsMedia(new PageRequest(0, 20))
+                .getContent().forEach(
+                System.out::println
+        );
     }
 
     @Test
