@@ -124,7 +124,9 @@ public abstract class AbstractHandler {
 
         if (request.isSecure() ||
                 // https://www.w3.org/TR/upgrade-insecure-requests/
-                request.getHeader("Upgrade-Insecure-Requests") != null) {
+                (request.getHeader("Upgrade-Insecure-Requests") != null
+                        && request.getHeader("X-Client-Verify") != null
+                )) {
             if (url.startsWith("https://"))
                 return url;
             if (url.startsWith("http://")) {
