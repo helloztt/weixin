@@ -15,6 +15,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.Enumeration;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -69,7 +70,7 @@ public abstract class AbstractHandler {
                     HttpServletRequest request = (HttpServletRequest) webRequest.getNativeRequest();
                     if (request.getMethod().equalsIgnoreCase("get")) {
                         Pattern pattern = Pattern.compile("&code=[0-9a-z]+");
-                        String url = request.getRequestURL().toString();
+                        String url = getUrl(request);
                         Matcher matcher = pattern.matcher(url);
                         String newUrl = matcher.replaceFirst("");
                         log.debug("got code,store openId in to session, redirect from " + url + " to " + newUrl);
@@ -104,10 +105,34 @@ public abstract class AbstractHandler {
             throw new IllegalArgumentException("can not get OpenId in no-get http.");
 
         //记录我们的url
-        String url = request.getRequestURL().toString();
+        String url = getUrl(request);
         String newUrl = Protocol.forAccount(account).redirectUrl(url, clazz);
 
         throw new RedirectException(newUrl);
+    }
+
+    private String getUrl(HttpServletRequest request) {
+        final String url = request.getRequestURL().toString();
+
+        if (log.isTraceEnabled()) {
+            final Enumeration<String> headerNames = request.getHeaderNames();
+            while (headerNames.hasMoreElements()) {
+                String header = headerNames.nextElement();
+                log.trace("[" + header + "]:" + request.getHeader(header));
+            }
+        }
+
+        if (request.isSecure() ||
+                // https://www.w3.org/TR/upgrade-insecure-requests/
+                request.getHeader("Upgrade-Insecure-Requests") != null) {
+            if (url.startsWith("https://"))
+                return url;
+            if (url.startsWith("http://")) {
+                String newUrl = url.substring(4);
+                return "https" + newUrl;
+            }
+        }
+        return url;
     }
 
     protected String currentOpenId(NativeWebRequest webRequest, PublicAccount account) {
