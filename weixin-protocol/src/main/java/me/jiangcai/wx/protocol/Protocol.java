@@ -14,6 +14,8 @@ import me.jiangcai.wx.model.media.NewsMediaItem;
 import me.jiangcai.wx.model.message.TemplateMessageLocate;
 import me.jiangcai.wx.model.message.TemplateMessageStyle;
 import me.jiangcai.wx.model.message.TemplateParameterAdjust;
+import me.jiangcai.wx.model.pay.UnifiedOrderRequest;
+import me.jiangcai.wx.model.pay.UnifiedOrderResponse;
 import me.jiangcai.wx.protocol.exception.ProtocolException;
 import me.jiangcai.wx.protocol.impl.ProtocolCallback;
 import me.jiangcai.wx.protocol.virtual.Action;
@@ -27,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -219,4 +222,31 @@ public interface Protocol {
      * @return 新增素材
      */
     String addImage(boolean permanent, BufferedImage image, String type) throws ProtocolException;
+
+    /**
+     * 生成微信支付订单
+     *
+     * @param orderRequest 订单相关请求参数
+     * @return
+     * @throws Exception
+     */
+    UnifiedOrderResponse createUnifiedOrder(UnifiedOrderRequest orderRequest) throws Exception;
+
+    /**
+     * 查询微信支付订单状态
+     *
+     * @param orderRequest 订单唯一编号
+     * @return
+     * @throws Exception
+     */
+    UnifiedOrderResponse queryUnifiedOrder(UnifiedOrderRequest orderRequest) throws Exception;
+
+    /**
+     * 根据订单详情生成用于支付的脚本
+     * @param prepayId
+     * @return
+     */
+    String javascriptForWechatPay(String prepayId) throws Exception;
+
+
 }

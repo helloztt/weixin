@@ -1,6 +1,8 @@
 package me.jiangcai.wx.protocol.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.wxpay.sdk.WXPayConstants;
+import com.github.wxpay.sdk.WXPayUtil;
 import me.jiangcai.lib.seext.ImageUtils;
 import me.jiangcai.wx.TokenType;
 import me.jiangcai.wx.WeixinUserService;
@@ -20,11 +22,11 @@ import me.jiangcai.wx.model.media.NewsMediaItem;
 import me.jiangcai.wx.model.message.TemplateMessageLocate;
 import me.jiangcai.wx.model.message.TemplateMessageStyle;
 import me.jiangcai.wx.model.message.TemplateParameterAdjust;
+import me.jiangcai.wx.model.pay.UnifiedOrderRequest;
+import me.jiangcai.wx.model.pay.UnifiedOrderResponse;
 import me.jiangcai.wx.protocol.Protocol;
 import me.jiangcai.wx.protocol.TemplateParameter;
-import me.jiangcai.wx.protocol.exception.BadAuthAccessException;
-import me.jiangcai.wx.protocol.exception.ClientException;
-import me.jiangcai.wx.protocol.exception.ProtocolException;
+import me.jiangcai.wx.protocol.exception.*;
 import me.jiangcai.wx.protocol.impl.handler.AccessTokenHandler;
 import me.jiangcai.wx.protocol.impl.handler.MediaItemResponseHandler;
 import me.jiangcai.wx.protocol.impl.handler.VoidHandler;
@@ -37,26 +39,32 @@ import me.jiangcai.wx.protocol.impl.response.MediaResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.EntityBuilder;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.codec.Hex;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -64,12 +72,9 @@ import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -80,6 +85,7 @@ class ProtocolImpl implements Protocol {
 
     private static final Log log = LogFactory.getLog(ProtocolImpl.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
     private final PublicAccount account;
 //    private final CloseableHttpClient client;
@@ -133,6 +139,101 @@ class ProtocolImpl implements Protocol {
         }
     }
 
+    @Override
+    public UnifiedOrderResponse createUnifiedOrder(UnifiedOrderRequest orderRequest) throws Exception {
+        //https://api.mch.weixin.qq.com/pay/unifiedorder
+        HttpPost httpPost = newPost("https://api.mch.weixin.qq.com/pay/unifiedorder");
+        Map<String, String> data = createOrderMap(orderRequest);
+        String reqBody = WXPayUtil.mapToXml(data);
+        StringEntity postEntity = new StringEntity(reqBody, "UTF-8");
+        httpPost.addHeader("Content-Type", "text/xml");
+        httpPost.addHeader("User-Agent", "wxpay sdk java v1.0 " + account.getMchID());
+        httpPost.setEntity(postEntity);
+        try {
+            try (CloseableHttpClient client = requestClient()) {
+                HttpResponse httpResponse = client.execute(httpPost);
+                String response = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
+                //解析，并校验sign
+                Map<String, String> responseMap = processResponseXml(response);
+                //获取返回结果
+                return getNewOrderResponse(responseMap);
+            }
+        } catch (IOException ex) {
+            throw new ClientException(ex);
+        }
+    }
+
+    @Override
+    public UnifiedOrderResponse queryUnifiedOrder(UnifiedOrderRequest orderRequest) throws Exception {
+        //https://api.mch.weixin.qq.com/pay/orderquery
+        HttpPost httpPost = newPost("https://api.mch.weixin.qq.com/pay/orderquery");
+        Map<String, String> data = new HashMap<>();
+        if (!StringUtils.isEmpty(orderRequest.getOrderNumber())) {
+            data.put("out_trade_no", orderRequest.getOrderNumber());
+        } else if (!StringUtils.isEmpty(orderRequest.getTransactionId())) {
+            data.put("transaction_id", orderRequest.getTransactionId());
+        } else {
+            throw new IllegalArgumentException();
+        }
+        fillUnifiedOrder(data);
+        String reqBody = WXPayUtil.mapToXml(data);
+        StringEntity postEntity = new StringEntity(reqBody, "UTF-8");
+        httpPost.addHeader("Content-Type", "text/xml");
+        httpPost.addHeader("User-Agent", "wxpay sdk java v1.0 " + account.getMchID());
+        httpPost.setEntity(postEntity);
+        try {
+            try (CloseableHttpClient client = requestClient()) {
+                HttpResponse httpResponse = client.execute(httpPost);
+                String response = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
+                //解析，并校验sign
+                Map<String, String> responseMap = processResponseXml(response);
+                //获取返回结果
+                return getOrderQueryResponse(responseMap);
+            }
+        } catch (IOException ex) {
+            throw new ClientException(ex);
+        }
+    }
+
+    @Override
+    public String javascriptForWechatPay(String prepayId) throws Exception {
+        String uuid = UUID.randomUUID().toString().replace("-", "");
+        Map<String, String> orderInfoMap = new HashMap<>();
+        orderInfoMap.put("appId", account.getAppID());
+        orderInfoMap.put("timeStamp", String.valueOf(System.currentTimeMillis()));
+        orderInfoMap.put("nonceStr", uuid);
+        orderInfoMap.put("package", "prepay_id=" + prepayId);
+        orderInfoMap.put("signType", "MD5");
+        orderInfoMap.put("sign", WXPayUtil.generateSignature(orderInfoMap, account.getApiKey(), WXPayConstants.SignType.MD5));
+
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder = stringBuilder.append("var tmp_").append(uuid).append(" = function () {\n" +
+                "    function onBridgeReady() {\n" +
+                "        WeixinJSBridge.invoke(\n" +
+                "            'getBrandWCPayRequest',")
+                .append(objectMapper.writeValueAsString(orderInfoMap)).append(",")
+                .append("function (res) {\n" +
+                        "                if (res.err_msg == \"get_brand_wcpay_request：ok\") {\n" +
+                        "                }\n" +
+                        "            }\n" +
+                        "        );\n" +
+                        "    }\n" +
+                        "\n" +
+                        "    if (typeof WeixinJSBridge == \"undefined\") {\n" +
+                        "        if (document.addEventListener) {\n" +
+                        "            document.addEventListener('WeixinJSBridgeReady', onBridgeReady, false);\n" +
+                        "        } else if (document.attachEvent) {\n" +
+                        "            document.attachEvent('WeixinJSBridgeReady', onBridgeReady);\n" +
+                        "            document.attachEvent('onWeixinJSBridgeReady', onBridgeReady);\n" +
+                        "        }\n" +
+                        "    } else {\n" +
+                        "        onBridgeReady();\n" +
+                        "    }\n" +
+                        "};");
+        stringBuilder.append("tmp_").append(uuid).append("();");
+        return stringBuilder.toString();
+    }
+
     private String addMedia(boolean permanent, String type, MultipartEntityBuilder builder) throws IOException {
         if (!permanent) {
 //            builder =
@@ -147,6 +248,116 @@ class ProtocolImpl implements Protocol {
             }
         } else
             throw new IllegalStateException("暂不支持永久素材");
+    }
+
+    private Map<String, String> createOrderMap(UnifiedOrderRequest orderRequest) throws Exception {
+        Map<String, String> orderMap = new HashMap<>();
+        orderMap.put("body", orderRequest.getBody());
+        orderMap.put("out_trade_no", orderRequest.getOrderNumber());
+        orderMap.put("total_fee", String.valueOf(orderRequest.getAmount().multiply(BigDecimal.valueOf(100)).intValue()));
+        orderMap.put("spbill_create_ip", orderRequest.getClientIpAddress());
+        orderMap.put("notify_url", orderRequest.getNotifyUrl());
+        orderMap.put("trade_type", orderRequest.getTradeType().toString());
+        if (StringUtils.isEmpty(orderRequest.getDescription())) {
+            orderMap.put("detail", orderRequest.getDescription());
+        }
+        if (!CollectionUtils.isEmpty(orderRequest.getMetadata())) {
+            orderMap.put("scene_info", objectMapper.writeValueAsString(orderRequest.getMetadata()));
+        }
+        return fillUnifiedOrder(orderMap);
+    }
+
+    /**
+     * 向order中添加 appid、mch_id、nonce_str、sign_type、sign <br>
+     *
+     * @param reqData
+     */
+    private Map<String, String> fillUnifiedOrder(Map<String, String> reqData) throws Exception {
+        reqData.put("appid", account.getAppID());
+        reqData.put("mch_id", account.getMchID());
+        reqData.put("nonce_str", UUID.randomUUID().toString().replaceAll("-", "").substring(0, 32));
+        reqData.put("sign", WXPayUtil.generateSignature(reqData, account.getApiKey(), WXPayConstants.SignType.MD5));
+        return reqData;
+    }
+
+    /**
+     * 处理 HTTPS API返回数据，转换成Map对象。return_code为SUCCESS时，验证签名。
+     *
+     * @param xmlStr API返回的XML格式数据
+     * @return Map类型数据
+     * @throws Exception
+     */
+    public Map<String, String> processResponseXml(String xmlStr) throws Exception {
+        String RETURN_CODE = "return_code";
+        String return_code;
+        Map<String, String> respData = WXPayUtil.xmlToMap(xmlStr);
+        if (respData.containsKey(RETURN_CODE)) {
+            return_code = respData.get(RETURN_CODE);
+        } else {
+            throw new IllegalXmlException();
+        }
+
+        if (return_code.equals(WXPayConstants.FAIL)) {
+            return respData;
+        } else if (return_code.equals(WXPayConstants.SUCCESS)) {
+            if (this.isResponseSignatureValid(respData)) {
+                return respData;
+            } else {
+                throw new IllegalSignException();
+            }
+        } else {
+            throw new IllegalXmlException();
+        }
+    }
+
+    public UnifiedOrderResponse getNewOrderResponse(Map<String, String> data) {
+        final String RESULT_CODE = "result_code", ERROR_CODE_DES = "err_code_des", PREPAY_ID = "prepay_id", CODE_URL = "code_url";
+        String resultCode = data.getOrDefault(RESULT_CODE, null);
+        if (resultCode.equals(WXPayConstants.FAIL)) {
+            String errCodeDes = data.getOrDefault(ERROR_CODE_DES, null);
+            throw new ErrorOrderException(errCodeDes);
+        } else if (resultCode.equals(WXPayConstants.SUCCESS)) {
+            UnifiedOrderResponse response = new UnifiedOrderResponse();
+            response.setPrepayId(data.getOrDefault(PREPAY_ID, null));
+            response.setCodeUrl(data.getOrDefault(CODE_URL, null));
+            return response;
+        } else {
+            throw new IllegalXmlException();
+        }
+    }
+
+    public UnifiedOrderResponse getOrderQueryResponse(Map<String, String> data) {
+        final String RESULT_CODE = "result_code", ERROR_CODE_DES = "err_code_des", TRADE_STATE = "trade_state", BANK_TYPE = "bank_type", TRANSTATION_ID = "transaction_id", TIME_END = "time_end";
+        String resultCode = data.getOrDefault(RESULT_CODE, null);
+        if (WXPayConstants.FAIL.equals(resultCode)) {
+            String errCodeDes = data.getOrDefault(ERROR_CODE_DES, null);
+            throw new ErrorOrderException(errCodeDes);
+        } else if (WXPayConstants.SUCCESS.equals(resultCode)) {
+            UnifiedOrderResponse response = new UnifiedOrderResponse();
+            String tradeStatus = data.get(TRADE_STATE);
+            response.setTradeStatus(tradeStatus);
+            if (WXPayConstants.SUCCESS.equals(tradeStatus)) {
+                response.setBankType(data.get(BANK_TYPE));
+                response.setTransactionId(data.get(TRANSTATION_ID));
+                response.setPayTime(LocalDateTime.parse(data.get(TIME_END), dateTimeFormatter));
+            }
+            return response;
+        } else {
+            throw new IllegalXmlException();
+        }
+
+    }
+
+    /**
+     * 判断xml数据的sign是否有效，必须包含sign字段，否则返回false。
+     *
+     * @param reqData 向wxpay post的请求数据
+     * @return 签名是否有效
+     * @throws Exception
+     */
+    public boolean isResponseSignatureValid(Map<String, String> reqData) throws Exception {
+        // 返回数据的签名方式和请求中给定的签名方式是一致的
+        return WXPayUtil.isSignatureValid(reqData, account.getApiKey(), WXPayConstants.SignType.MD5);
     }
 
     @Override
