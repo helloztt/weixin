@@ -1,4 +1,4 @@
-package me.jiangcai.wx.standard.service;
+package m.jiangcai.wx.pay.service;
 
 import me.jiangcai.lib.ee.ServletUtils;
 import me.jiangcai.payment.PayableOrder;
@@ -25,6 +25,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import static me.jiangcai.wx.model.pay.TradeType.*;
+
 /**
  * @author helloztt
  */
@@ -46,10 +48,11 @@ public class WeixinPaymentFormImpl implements WeixinPaymentForm {
         orderRequest.setBody(order.getOrderBody());
         orderRequest.setAmount(order.getOrderDueAmount());
         orderRequest.setClientIpAddress(ServletUtils.clientIpAddress(request));
+//        orderRequest.setClientIpAddress("192.168.1.52");
 
         //交易类型，默认为jsapi
         Object tradeTypeObj = additionalParameters.get("tradeType");
-        TradeType tradeType = TradeType.JSAPI;
+        TradeType tradeType = JSAPI;
         if (tradeTypeObj == null) {
         } else if (tradeTypeObj instanceof TradeType) {
             tradeType = (TradeType) tradeTypeObj;
