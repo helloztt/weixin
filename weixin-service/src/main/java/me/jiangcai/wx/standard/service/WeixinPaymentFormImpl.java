@@ -46,6 +46,7 @@ public class WeixinPaymentFormImpl implements WeixinPaymentForm {
         orderRequest.setBody(order.getOrderBody());
         orderRequest.setAmount(order.getOrderDueAmount());
         orderRequest.setClientIpAddress(ServletUtils.clientIpAddress(request));
+        orderRequest.setNotifyUrl(additionalParameters.get("notifyUrl").toString());
 
         //交易类型，默认为jsapi
         Object tradeTypeObj = additionalParameters.get("tradeType");

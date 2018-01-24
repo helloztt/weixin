@@ -258,7 +258,7 @@ class ProtocolImpl implements Protocol {
         orderMap.put("spbill_create_ip", orderRequest.getClientIpAddress());
         orderMap.put("notify_url", orderRequest.getNotifyUrl());
         orderMap.put("trade_type", orderRequest.getTradeType().toString());
-        if (StringUtils.isEmpty(orderRequest.getDescription())) {
+        if (!StringUtils.isEmpty(orderRequest.getDescription())) {
             orderMap.put("detail", orderRequest.getDescription());
         }
         if (!CollectionUtils.isEmpty(orderRequest.getMetadata())) {
