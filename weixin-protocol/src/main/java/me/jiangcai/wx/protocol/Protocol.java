@@ -72,6 +72,13 @@ public interface Protocol {
     String javascriptSign(String timestamp, String nonceStr, String url) throws ProtocolException;
 
     /**
+     * 订单查询数据解析
+     * @param data
+     * @return
+     */
+    UnifiedOrderResponse getOrderQueryResponse(Map<String, String> data);
+
+    /**
      * 更新{@link PublicAccount#javascriptTicket}
      */
     void getJavascriptTicket() throws ProtocolException;
@@ -240,6 +247,14 @@ public interface Protocol {
      * @throws Exception
      */
     UnifiedOrderResponse queryUnifiedOrder(UnifiedOrderRequest orderRequest) throws Exception;
+
+    /**
+     * 解析返回数据
+     * @param xmlStr
+     * @return
+     * @throws Exception
+     */
+    Map<String, String> processResponseXml(String xmlStr) throws Exception;
 
     /**
      * 根据订单详情生成用于支付的脚本

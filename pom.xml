@@ -16,6 +16,7 @@
         <module>weixin-protocol</module>
         <module>weixin-api</module>
         <module>weixin-service</module>
+        <module>weixin-pay</module>
         <module>demo</module>
         <module>weixin-web</module>
         <module>weixin-test</module>

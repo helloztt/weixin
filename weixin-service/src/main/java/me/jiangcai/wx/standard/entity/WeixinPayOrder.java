@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 
 /**
  * 微信统一的支付订单
+ *
  * @author helloztt
  */
 @Data
@@ -25,10 +26,18 @@ public class WeixinPayOrder extends PayOrder {
     @Column(length = 64)
     private String prepayId;
     /**
+     * openId
+     */
+    @Column
+    private String openId;
+    /**
      * 二维码链接
      */
     @Column(length = 64)
     private String codeUrl;
+
+    @Column(scale = 2, precision = 11)
+    private BigDecimal amount;
 
     /**
      * SUCCESS—支付成功

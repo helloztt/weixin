@@ -6,6 +6,7 @@ import me.jiangcai.payment.entity.PayOrder;
 import me.jiangcai.payment.exception.SystemMaintainException;
 import me.jiangcai.payment.service.PaymentGatewayService;
 import me.jiangcai.wx.couple.WeixinRequestHandlerMapping;
+import me.jiangcai.wx.model.WeixinPayUrl;
 import me.jiangcai.wx.model.pay.TradeType;
 import me.jiangcai.wx.model.pay.UnifiedOrderRequest;
 import me.jiangcai.wx.model.pay.UnifiedOrderResponse;
@@ -15,7 +16,10 @@ import me.jiangcai.wx.standard.entity.WeixinPayOrder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -37,18 +41,19 @@ public class WeixinPaymentFormImpl implements WeixinPaymentForm {
     private WeixinRequestHandlerMapping weixinRequestHandlerMapping;
     @Autowired
     private EntityManager entityManager;
+    @Autowired
+    private WeixinPayUrl weixinPayUrl;
 
     @Override
     public PayOrder newPayOrder(HttpServletRequest request, PayableOrder order, Map<String, Object> additionalParameters) throws SystemMaintainException {
         WeixinPayOrder payOrder = new WeixinPayOrder();
+        payOrder.setAmount(order.getOrderDueAmount());
 
         UnifiedOrderRequest orderRequest = new UnifiedOrderRequest();
         orderRequest.setBody(order.getOrderBody());
         orderRequest.setAmount(order.getOrderDueAmount());
         orderRequest.setClientIpAddress(ServletUtils.clientIpAddress(request));
-        if(additionalParameters.containsKey("notifyUrl")){
-            orderRequest.setNotifyUrl(additionalParameters.get("notifyUrl").toString());
-        }
+        orderRequest.setNotifyUrl(weixinPayUrl.getAbsUrl());
 
         //交易类型，默认为jsapi
         Object tradeTypeObj = additionalParameters.get("tradeType");
@@ -60,7 +65,7 @@ public class WeixinPaymentFormImpl implements WeixinPaymentForm {
             tradeType = TradeType.valueOf(tradeTypeObj.toString());
         }
         orderRequest.setTradeType(tradeType);
-        if(TradeType.JSAPI.equals(tradeType)){
+        if (TradeType.JSAPI.equals(tradeType)) {
             orderRequest.setOpenId(additionalParameters.get("openId").toString());
         }
         try {
@@ -77,7 +82,7 @@ public class WeixinPaymentFormImpl implements WeixinPaymentForm {
                     payOrder.setPrepayId(orderResponse.getPrepayId());
             }
         } catch (Exception e) {
-            log.error("生成订单出错",e);
+            log.error("生成订单出错", e);
             throw new SystemMaintainException(e);
         }
         payOrder.setPlatformId(orderRequest.getOrderNumber());
@@ -103,15 +108,27 @@ public class WeixinPaymentFormImpl implements WeixinPaymentForm {
     }
 
     @Override
+    @Transactional(rollbackFor = RuntimeException.class)
+    @EventListener(OrderChangeEvent.class)
     public void orderChange(OrderChangeEvent event) {
         log.debug("trade event:" + event);
-        WeixinPayOrder order = paymentGatewayService.getOrder(WeixinPayOrder.class, event.getData().getOrderNumber());
+        UnifiedOrderResponse orderResponse = Protocol.forAccount(weixinRequestHandlerMapping.currentPublicAccount()).getOrderQueryResponse(event.getData());
+        WeixinPayOrder order = paymentGatewayService.getOrder(WeixinPayOrder.class, orderResponse.getOrderNumber());
         if (order == null) {
             log.warn("received trade event without system:" + event);
             return;
         }
+        //校验金额是否一致
+        if (order.getAmount().compareTo(orderResponse.getTotalFee()) != 0) {
+            log.warn("received trade amount not equal:" + event);
+            return;
+        }
+        if (StringUtils.isEmpty(order.getOpenId())) {
+            order.setOpenId(orderResponse.getOpenId());
+        }
+        order.setPlatformId(orderResponse.getTransactionId());
         order.setEventTime(LocalDateTime.now());
-        order.setOrderStatus(event.getData().getTradeStatus());
+        order.setOrderStatus(orderResponse.getTradeStatus());
 
         if (!order.isCancel()) {
             if ("SUCCEED".equals(order.getOrderStatus())) {
@@ -126,7 +143,7 @@ public class WeixinPaymentFormImpl implements WeixinPaymentForm {
         try {
             return Protocol.forAccount(weixinRequestHandlerMapping.currentPublicAccount()).javascriptForWechatPay(prepayId);
         } catch (Exception e) {
-            log.error("生成脚本出错",e);
+            log.error("生成脚本出错", e);
             throw new SystemMaintainException(e);
         }
     }

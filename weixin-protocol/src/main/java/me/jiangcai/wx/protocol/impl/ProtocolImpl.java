@@ -256,11 +256,7 @@ class ProtocolImpl implements Protocol {
         orderMap.put("out_trade_no", orderRequest.getOrderNumber());
         orderMap.put("total_fee", String.valueOf(orderRequest.getAmount().multiply(BigDecimal.valueOf(100)).intValue()));
         orderMap.put("spbill_create_ip", orderRequest.getClientIpAddress());
-        if (!StringUtils.isEmpty(orderRequest.getNotifyUrl())) {
-            orderMap.put("notify_url", orderRequest.getNotifyUrl());
-        } else {
-            orderMap.put("notify_url", account.getNotifyURL());
-        }
+        orderMap.put("notify_url", orderRequest.getNotifyUrl());
         orderMap.put("trade_type", orderRequest.getTradeType().toString());
         if (!StringUtils.isEmpty(orderRequest.getDescription())) {
             orderMap.put("detail", orderRequest.getDescription());
@@ -294,6 +290,7 @@ class ProtocolImpl implements Protocol {
      * @return Map类型数据
      * @throws Exception
      */
+    @Override
     public Map<String, String> processResponseXml(String xmlStr) throws Exception {
         String RETURN_CODE = "return_code", RETURN_MSG = "return_msg";
         String return_code, return_msg;
@@ -315,7 +312,7 @@ class ProtocolImpl implements Protocol {
             if (this.isResponseSignatureValid(respData)) {
                 return respData;
             } else {
-                throw new IllegalSignException();
+                throw new IllegalAccessError("bad sign");
             }
         } else {
             throw new IllegalXmlException();
@@ -338,19 +335,28 @@ class ProtocolImpl implements Protocol {
         }
     }
 
+    @Override
     public UnifiedOrderResponse getOrderQueryResponse(Map<String, String> data) {
-        final String RESULT_CODE = "result_code", ERROR_CODE_DES = "err_code_des", TRADE_STATE = "trade_state", BANK_TYPE = "bank_type", TRANSTATION_ID = "transaction_id", TIME_END = "time_end";
+        final String RESULT_CODE = "result_code", ERROR_CODE_DES = "err_code_des";
+        final String TRADE_STATE = "trade_state", OPEN_ID = "openid", TOTAL_FEE = "total_fee", BANK_TYPE = "bank_type", TRANSACTION_ID = "transaction_id", TIME_END = "time_end";
         String resultCode = data.getOrDefault(RESULT_CODE, null);
         if (WXPayConstants.FAIL.equals(resultCode)) {
             String errCodeDes = data.getOrDefault(ERROR_CODE_DES, null);
             throw new ErrorOrderException(errCodeDes);
         } else if (WXPayConstants.SUCCESS.equals(resultCode)) {
             UnifiedOrderResponse response = new UnifiedOrderResponse();
-            String tradeStatus = data.get(TRADE_STATE);
+            response.setOpenId(data.get(OPEN_ID));
+            response.setTotalFee(BigDecimal.valueOf(Double.parseDouble(data.get(TOTAL_FEE))));
+            String tradeStatus = null;
+            if(data.containsKey(TRADE_STATE)){
+                tradeStatus = data.get(TRADE_STATE);
+            }else if(data.containsKey(TIME_END)){
+                tradeStatus = "SUCCESS";
+            }
             response.setTradeStatus(tradeStatus);
             if (WXPayConstants.SUCCESS.equals(tradeStatus)) {
                 response.setBankType(data.get(BANK_TYPE));
-                response.setTransactionId(data.get(TRANSTATION_ID));
+                response.setTransactionId(data.get(TRANSACTION_ID));
                 response.setPayTime(LocalDateTime.parse(data.get(TIME_END), dateTimeFormatter));
             }
             return response;
