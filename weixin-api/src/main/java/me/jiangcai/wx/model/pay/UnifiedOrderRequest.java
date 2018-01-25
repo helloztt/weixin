@@ -18,6 +18,10 @@ public class UnifiedOrderRequest {
      */
     private String orderNumber = UUID.randomUUID().toString().replace("-", "");
     /**
+     * openId
+     */
+    private String openId;
+    /**
      * 微信订单号
      */
     private String transactionId;

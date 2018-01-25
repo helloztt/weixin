@@ -21,6 +21,8 @@ public abstract class PublicAccount {
     //商户号
     private String mchID;
     private String apiKey;
+    //异步通知地址
+    private String notifyURL;
     // 接口
     /**
      * 微信接口配置信息:URL,为了提高效率,规定该URL必须以斜杠结尾!

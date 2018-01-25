@@ -142,7 +142,7 @@ class ProtocolImpl implements Protocol {
     @Override
     public UnifiedOrderResponse createUnifiedOrder(UnifiedOrderRequest orderRequest) throws Exception {
         //https://api.mch.weixin.qq.com/pay/unifiedorder
-        HttpPost httpPost = newPost("https://api.mch.weixin.qq.com/pay/unifiedorder");
+        HttpPost httpPost = new HttpPost("https://api.mch.weixin.qq.com/pay/unifiedorder");
         Map<String, String> data = createOrderMap(orderRequest);
         String reqBody = WXPayUtil.mapToXml(data);
         StringEntity postEntity = new StringEntity(reqBody, "UTF-8");
@@ -166,7 +166,7 @@ class ProtocolImpl implements Protocol {
     @Override
     public UnifiedOrderResponse queryUnifiedOrder(UnifiedOrderRequest orderRequest) throws Exception {
         //https://api.mch.weixin.qq.com/pay/orderquery
-        HttpPost httpPost = newPost("https://api.mch.weixin.qq.com/pay/orderquery");
+        HttpPost httpPost = new HttpPost("https://api.mch.weixin.qq.com/pay/orderquery");
         Map<String, String> data = new HashMap<>();
         if (!StringUtils.isEmpty(orderRequest.getOrderNumber())) {
             data.put("out_trade_no", orderRequest.getOrderNumber());
@@ -256,13 +256,20 @@ class ProtocolImpl implements Protocol {
         orderMap.put("out_trade_no", orderRequest.getOrderNumber());
         orderMap.put("total_fee", String.valueOf(orderRequest.getAmount().multiply(BigDecimal.valueOf(100)).intValue()));
         orderMap.put("spbill_create_ip", orderRequest.getClientIpAddress());
-        orderMap.put("notify_url", orderRequest.getNotifyUrl());
+        if (!StringUtils.isEmpty(orderRequest.getNotifyUrl())) {
+            orderMap.put("notify_url", orderRequest.getNotifyUrl());
+        } else {
+            orderMap.put("notify_url", account.getNotifyURL());
+        }
         orderMap.put("trade_type", orderRequest.getTradeType().toString());
         if (!StringUtils.isEmpty(orderRequest.getDescription())) {
             orderMap.put("detail", orderRequest.getDescription());
         }
         if (!CollectionUtils.isEmpty(orderRequest.getMetadata())) {
             orderMap.put("scene_info", objectMapper.writeValueAsString(orderRequest.getMetadata()));
+        }
+        if (!StringUtils.isEmpty(orderRequest.getOpenId())) {
+            orderMap.put("openId", orderRequest.getOpenId());
         }
         return fillUnifiedOrder(orderMap);
     }
@@ -288,18 +295,23 @@ class ProtocolImpl implements Protocol {
      * @throws Exception
      */
     public Map<String, String> processResponseXml(String xmlStr) throws Exception {
-        String RETURN_CODE = "return_code";
-        String return_code;
+        String RETURN_CODE = "return_code", RETURN_MSG = "return_msg";
+        String return_code, return_msg;
         Map<String, String> respData = WXPayUtil.xmlToMap(xmlStr);
         if (respData.containsKey(RETURN_CODE)) {
             return_code = respData.get(RETURN_CODE);
         } else {
             throw new IllegalXmlException();
         }
+        if (respData.containsKey(RETURN_MSG)) {
+            return_msg = respData.get(RETURN_MSG);
+        } else {
+            throw new IllegalXmlException();
+        }
 
-        if (return_code.equals(WXPayConstants.FAIL)) {
-            return respData;
-        } else if (return_code.equals(WXPayConstants.SUCCESS)) {
+        if (WXPayConstants.FAIL.equals(return_code)) {
+            throw new ClientException(return_msg);
+        } else if (WXPayConstants.SUCCESS.equals(return_code)) {
             if (this.isResponseSignatureValid(respData)) {
                 return respData;
             } else {
@@ -313,10 +325,10 @@ class ProtocolImpl implements Protocol {
     public UnifiedOrderResponse getNewOrderResponse(Map<String, String> data) {
         final String RESULT_CODE = "result_code", ERROR_CODE_DES = "err_code_des", PREPAY_ID = "prepay_id", CODE_URL = "code_url";
         String resultCode = data.getOrDefault(RESULT_CODE, null);
-        if (resultCode.equals(WXPayConstants.FAIL)) {
+        if (WXPayConstants.FAIL.equals(resultCode)) {
             String errCodeDes = data.getOrDefault(ERROR_CODE_DES, null);
             throw new ErrorOrderException(errCodeDes);
-        } else if (resultCode.equals(WXPayConstants.SUCCESS)) {
+        } else if (WXPayConstants.SUCCESS.equals(resultCode)) {
             UnifiedOrderResponse response = new UnifiedOrderResponse();
             response.setPrepayId(data.getOrDefault(PREPAY_ID, null));
             response.setCodeUrl(data.getOrDefault(CODE_URL, null));

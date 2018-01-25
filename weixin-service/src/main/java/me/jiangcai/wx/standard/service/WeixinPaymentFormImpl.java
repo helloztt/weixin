@@ -46,7 +46,9 @@ public class WeixinPaymentFormImpl implements WeixinPaymentForm {
         orderRequest.setBody(order.getOrderBody());
         orderRequest.setAmount(order.getOrderDueAmount());
         orderRequest.setClientIpAddress(ServletUtils.clientIpAddress(request));
-        orderRequest.setNotifyUrl(additionalParameters.get("notifyUrl").toString());
+        if(additionalParameters.containsKey("notifyUrl")){
+            orderRequest.setNotifyUrl(additionalParameters.get("notifyUrl").toString());
+        }
 
         //交易类型，默认为jsapi
         Object tradeTypeObj = additionalParameters.get("tradeType");
@@ -58,6 +60,9 @@ public class WeixinPaymentFormImpl implements WeixinPaymentForm {
             tradeType = TradeType.valueOf(tradeTypeObj.toString());
         }
         orderRequest.setTradeType(tradeType);
+        if(TradeType.JSAPI.equals(tradeType)){
+            orderRequest.setOpenId(additionalParameters.get("openId").toString());
+        }
         try {
             UnifiedOrderResponse orderResponse = Protocol.forAccount(weixinRequestHandlerMapping.currentPublicAccount()).createUnifiedOrder(orderRequest);
             switch (tradeType) {
