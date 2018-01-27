@@ -207,7 +207,7 @@ class ProtocolImpl implements Protocol {
         orderInfoMap.put("sign", WXPayUtil.generateSignature(orderInfoMap, account.getApiKey(), WXPayConstants.SignType.MD5));
 
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder = stringBuilder.append("var tmp_").append(uuid).append(" = function () {\n" +
+        stringBuilder = stringBuilder.append("<script>").append("var tmp_").append(uuid).append(" = function () {\n" +
                 "    function onBridgeReady() {\n" +
                 "        WeixinJSBridge.invoke(\n" +
                 "            'getBrandWCPayRequest',")
@@ -230,7 +230,7 @@ class ProtocolImpl implements Protocol {
                         "        onBridgeReady();\n" +
                         "    }\n" +
                         "};");
-        stringBuilder.append("tmp_").append(uuid).append("();");
+        stringBuilder.append("tmp_").append(uuid).append("();").append("</script>");
         return stringBuilder.toString();
     }
 
