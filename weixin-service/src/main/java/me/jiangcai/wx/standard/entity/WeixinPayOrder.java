@@ -51,6 +51,12 @@ public class WeixinPayOrder extends PayOrder {
     @Column(length = 15)
     private String orderStatus;
 
+    /**
+     * 支付成功的跳转地址
+     */
+    @Column
+    private String redirectUrl;
+
     @Override
     public Class<? extends PaymentForm> getPaymentFormClass() {
         return null;
