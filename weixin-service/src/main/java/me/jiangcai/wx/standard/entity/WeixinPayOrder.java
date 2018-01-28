@@ -1,11 +1,9 @@
 package me.jiangcai.wx.standard.entity;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import me.jiangcai.payment.PaymentForm;
 import me.jiangcai.payment.entity.PayOrder;
-import me.jiangcai.wx.model.pay.TradeType;
 import me.jiangcai.wx.standard.service.WeixinPaymentForm;
 
 import javax.persistence.*;
@@ -33,7 +31,7 @@ public class WeixinPayOrder extends PayOrder {
     /**
      * openId
      */
-    @Column
+    @Column(length = 30)
     private String openId;
     /**
      * 二维码链接
