@@ -205,33 +205,7 @@ class ProtocolImpl implements Protocol {
         orderInfoMap.put("package", "prepay_id=" + prepayId);
         orderInfoMap.put("signType", "MD5");
         orderInfoMap.put("sign", WXPayUtil.generateSignature(orderInfoMap, account.getApiKey(), WXPayConstants.SignType.MD5));
-
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder = stringBuilder.append("<script>").append("var tmp_").append(uuid).append(" = function () {\n" +
-                "    function onBridgeReady() {\n" +
-                "        WeixinJSBridge.invoke(\n" +
-                "            'getBrandWCPayRequest',")
-                .append(objectMapper.writeValueAsString(orderInfoMap)).append(",")
-                .append("function (res) {\n" +
-                        "                if (res.err_msg == \"get_brand_wcpay_request：ok\") {\n" +
-                        "                }\n" +
-                        "            }\n" +
-                        "        );\n" +
-                        "    }\n" +
-                        "\n" +
-                        "    if (typeof WeixinJSBridge == \"undefined\") {\n" +
-                        "        if (document.addEventListener) {\n" +
-                        "            document.addEventListener('WeixinJSBridgeReady', onBridgeReady, false);\n" +
-                        "        } else if (document.attachEvent) {\n" +
-                        "            document.attachEvent('WeixinJSBridgeReady', onBridgeReady);\n" +
-                        "            document.attachEvent('onWeixinJSBridgeReady', onBridgeReady);\n" +
-                        "        }\n" +
-                        "    } else {\n" +
-                        "        onBridgeReady();\n" +
-                        "    }\n" +
-                        "};");
-        stringBuilder.append("tmp_").append(uuid).append("();").append("</script>");
-        return stringBuilder.toString();
+        return objectMapper.writeValueAsString(orderInfoMap);
     }
 
     private String addMedia(boolean permanent, String type, MultipartEntityBuilder builder) throws IOException {

@@ -1,9 +1,12 @@
 package me.jiangcai.wx.standard.entity;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import me.jiangcai.payment.PaymentForm;
 import me.jiangcai.payment.entity.PayOrder;
 import me.jiangcai.wx.model.pay.TradeType;
+import me.jiangcai.wx.standard.service.WeixinPaymentForm;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -13,7 +16,9 @@ import java.math.BigDecimal;
  *
  * @author helloztt
  */
-@Data
+@Entity
+@Setter
+@Getter
 public class WeixinPayOrder extends PayOrder {
     /**
      * 一段脚本可以引导支付
@@ -59,7 +64,7 @@ public class WeixinPayOrder extends PayOrder {
 
     @Override
     public Class<? extends PaymentForm> getPaymentFormClass() {
-        return null;
+        return WeixinPaymentForm.class;
     }
 
 

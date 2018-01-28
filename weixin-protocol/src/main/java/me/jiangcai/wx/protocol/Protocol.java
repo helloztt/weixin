@@ -73,6 +73,7 @@ public interface Protocol {
 
     /**
      * 订单查询数据解析
+     *
      * @param data
      * @return
      */
@@ -250,6 +251,7 @@ public interface Protocol {
 
     /**
      * 解析返回数据
+     *
      * @param xmlStr
      * @return
      * @throws Exception
@@ -258,8 +260,10 @@ public interface Protocol {
 
     /**
      * 根据订单详情生成用于支付的脚本
+     *
      * @param prepayId
      * @return
+     * @throws Exception
      */
     String javascriptForWechatPay(String prepayId) throws Exception;
 
