@@ -7,7 +7,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -25,8 +24,6 @@ import java.util.Map;
  */
 @Controller
 public class WeixinPayHook {
-    @Autowired
-    private Environment environment;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
     @Autowired
