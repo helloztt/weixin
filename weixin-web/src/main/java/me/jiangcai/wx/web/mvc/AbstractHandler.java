@@ -71,7 +71,7 @@ public abstract class AbstractHandler {
                     // 将code 去掉 再度重定向
                     HttpServletRequest request = (HttpServletRequest) webRequest.getNativeRequest();
                     if (request.getMethod().equalsIgnoreCase("get")) {
-                        Pattern pattern = Pattern.compile("&code=[0-9a-z]+");
+                        Pattern pattern = Pattern.compile("&code=[0-9a-zA-Z]+");
                         String url = getUrl(request);
                         Matcher matcher = pattern.matcher(url);
                         String newUrl = matcher.replaceFirst("");
