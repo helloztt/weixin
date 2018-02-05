@@ -15,7 +15,9 @@ import org.springframework.web.context.request.NativeWebRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.net.URLEncoder;
 import java.util.Enumeration;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -112,8 +114,28 @@ public abstract class AbstractHandler {
     }
 
     private String getUrl(HttpServletRequest request) {
-        final String url = request.getRequestURL().toString();
-
+        String url = request.getRequestURL().toString();
+        //微信授权是不支持任何端口的，所以 replace it
+        if(url.matches("http[s]?:\\/\\/[a-zA-Z.0-9]+(:\\d+).*")){
+            url = url.replaceFirst(":\\d+","");
+        }
+        //竟然url上不带参数，那我只能自己加咯
+        StringBuilder paramSb = new StringBuilder();
+        Map<String, String[]> paramMap = request.getParameterMap();
+        if(request.getParameterMap().size() > 0){
+            for (String key: paramMap.keySet()){
+                for (String param:paramMap.get(key)){
+                    log.debug("param:" + param);
+                    if(paramSb.length() > 0){
+                        paramSb = paramSb.append("&");
+                    }
+                    paramSb = paramSb.append(key)
+                            .append("=").append(URLEncoder.encode(param));
+                }
+            }
+            url = url + "?" + paramSb.toString();
+        }
+        log.debug("url:" + url);
         if (log.isTraceEnabled()) {
             final Enumeration<String> headerNames = request.getHeaderNames();
             while (headerNames.hasMoreElements()) {
