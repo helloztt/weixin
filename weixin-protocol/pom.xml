@@ -85,11 +85,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>me.jiangcai.payment</groupId>
-            <artifactId>payment-api</artifactId>
-            <version>${payment.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.github.wxpay</groupId>
             <artifactId>WXPay-SDK-Java</artifactId>
             <version>0.0.4</version>
